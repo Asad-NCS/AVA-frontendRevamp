@@ -1,19 +1,303 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const multer = require('multer');
+const cookieParser = require('cookie-parser');
+const compression = require('compression');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+const MEISTER_PASSWORD = process.env.MEISTER_PASSWORD || process.env.ADMIN_PASSWORD || 'adventures';
+const MEISTER_COOKIE_SECRET = process.env.MEISTER_COOKIE_SECRET || process.env.ADMIN_COOKIE_SECRET || 'ava-meister-session-secret';
+const MEISTER_SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 3;
+const BLOG_FILE = path.join(__dirname, 'data', 'blog-posts.json');
+const SECURITY_FILE = path.join(__dirname, 'data', 'meister-security.json');
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
+
+let securityState = { attempts: {}, blockedIPs: [] };
+
+function createMeisterToken() {
+  const issued = Date.now().toString();
+  const signature = crypto
+    .createHmac('sha256', MEISTER_COOKIE_SECRET)
+    .update(issued)
+    .digest('hex');
+  return `${issued}.${signature}`;
+}
+
+function verifyMeisterToken(token) {
+  if (!token || !token.includes('.')) return false;
+
+  const [issued, signature] = token.split('.');
+  if (!issued || !signature) return false;
+
+  const expected = crypto
+    .createHmac('sha256', MEISTER_COOKIE_SECRET)
+    .update(issued)
+    .digest('hex');
+
+  if (signature !== expected) return false;
+
+  const age = Date.now() - Number(issued);
+  return age >= 0 && age <= MEISTER_SESSION_MAX_AGE;
+}
+
+function loadSecurityState() {
+  const legacyFile = path.join(__dirname, 'data', 'admin-security.json');
+  try {
+    if (fs.existsSync(SECURITY_FILE)) {
+      securityState = JSON.parse(fs.readFileSync(SECURITY_FILE, 'utf8'));
+    } else if (fs.existsSync(legacyFile)) {
+      securityState = JSON.parse(fs.readFileSync(legacyFile, 'utf8'));
+      saveSecurityState();
+    }
+  } catch {
+    securityState = { attempts: {}, blockedIPs: [] };
+  }
+}
+
+function saveSecurityState() {
+  fs.writeFileSync(SECURITY_FILE, JSON.stringify(securityState, null, 2));
+}
+
+function getClientIP(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  let ip = forwarded ? forwarded.split(',')[0].trim() : (req.ip || req.socket.remoteAddress || 'unknown');
+  if (ip.startsWith('::ffff:')) ip = ip.slice(7);
+  if (ip === '::1') ip = '127.0.0.1';
+  return ip;
+}
+
+function isBlocked(ip) {
+  return securityState.blockedIPs.includes(ip);
+}
+
+function getAttemptsLeft(ip) {
+  const used = securityState.attempts[ip] || 0;
+  return Math.max(0, MAX_LOGIN_ATTEMPTS - used);
+}
+
+function recordFailedAttempt(ip) {
+  securityState.attempts[ip] = (securityState.attempts[ip] || 0) + 1;
+  if (securityState.attempts[ip] >= MAX_LOGIN_ATTEMPTS && !securityState.blockedIPs.includes(ip)) {
+    securityState.blockedIPs.push(ip);
+  }
+  saveSecurityState();
+}
+
+function clearAttempts(ip) {
+  delete securityState.attempts[ip];
+  saveSecurityState();
+}
+
+function isMeister(req) {
+  return verifyMeisterToken(req.cookies.meisterSession);
+}
+
+function setMeisterCookie(res) {
+  const token = createMeisterToken();
+  res.cookie('meisterSession', token, {
+    httpOnly: true,
+    maxAge: MEISTER_SESSION_MAX_AGE,
+    sameSite: 'lax',
+    path: '/',
+  });
+  return token;
+}
+
+function classifyUpload(file) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const url = `/uploads/${file.filename}`;
+  if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) return { kind: 'images', url };
+  if (['.mp4', '.webm', '.mov'].includes(ext)) return { kind: 'videos', url };
+  if (ext === '.pdf') return { kind: 'pdfs', url };
+  return null;
+}
+
+function readPosts() {
+  try {
+    if (!fs.existsSync(BLOG_FILE)) return [];
+    return JSON.parse(fs.readFileSync(BLOG_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function writePosts(posts) {
+  fs.mkdirSync(path.dirname(BLOG_FILE), { recursive: true });
+  fs.writeFileSync(BLOG_FILE, JSON.stringify(posts, null, 2));
+}
+
+function deleteMediaFiles(post) {
+  [...(post.images || []), ...(post.videos || []), ...(post.pdfs || [])].forEach((mediaPath) => {
+    const filename = path.basename(mediaPath);
+    const fullPath = path.join(UPLOADS_DIR, filename);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+  });
+}
+
+loadSecurityState();
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+app.use(compression());
+app.use(express.json({ limit: '2mb' }));
+app.use(cookieParser());
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: UPLOADS_DIR,
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `${Date.now()}-${crypto.randomUUID()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.mov', '.pdf'];
+    cb(null, allowed.includes(ext));
+  },
+});
+
+// ─── HIDDEN MEISTER ENTRY ───
+app.get(['/meister', '/meister/'], (req, res) => {
+  const ip = getClientIP(req);
+  if (isBlocked(ip)) {
+    return res.redirect('/');
+  }
+  if (isMeister(req)) {
+    return res.redirect('/meister/index.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'meister.html'));
+});
+
+app.get('/master', (_req, res) => res.redirect('/meister'));
+app.get('/admin', (_req, res) => res.redirect('/meister'));
+
+// ─── MEISTER AUTH ───
+app.get('/api/meister/status', (req, res) => {
+  const ip = getClientIP(req);
+  if (isBlocked(ip)) {
+    return res.json({ blocked: true, authenticated: false, attemptsLeft: 0 });
+  }
+  res.json({
+    blocked: false,
+    authenticated: isMeister(req),
+    attemptsLeft: getAttemptsLeft(ip),
+  });
+});
+
+app.post('/api/meister/login', (req, res) => {
+  const ip = getClientIP(req);
+
+  if (isBlocked(ip)) {
+    return res.status(403).json({ blocked: true, error: 'Access restricted' });
+  }
+
+  const { password } = req.body || {};
+  if (password === MEISTER_PASSWORD) {
+    clearAttempts(ip);
+    setMeisterCookie(res);
+    return res.json({ success: true });
+  }
+
+  recordFailedAttempt(ip);
+  if (isBlocked(ip)) {
+    return res.status(403).json({ blocked: true, error: 'Too many attempts. Access restricted.' });
+  }
+
+  res.status(401).json({
+    error: 'Incorrect password',
+    attemptsLeft: getAttemptsLeft(ip),
+  });
+});
+
+app.post('/api/meister/logout', (req, res) => {
+  res.clearCookie('meisterSession', { path: '/' });
+  res.json({ success: true });
+});
+
+// ─── BLOG API ───
+app.get('/api/blog', (_req, res) => {
+  const posts = readPosts().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json(posts);
+});
+
+app.post('/api/blog', upload.array('media', 15), (req, res) => {
+  if (!isMeister(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const text = (req.body.text || '').trim();
+  const images = [];
+  const videos = [];
+  const pdfs = [];
+
+  (req.files || []).forEach((file) => {
+    const classified = classifyUpload(file);
+    if (!classified) return;
+    if (classified.kind === 'images') images.push(classified.url);
+    if (classified.kind === 'videos') videos.push(classified.url);
+    if (classified.kind === 'pdfs') pdfs.push(classified.url);
+  });
+
+  if (!text && images.length === 0 && videos.length === 0 && pdfs.length === 0) {
+    return res.status(400).json({ error: 'Post must include text, photos, videos, or a PDF' });
+  }
+
+  const post = {
+    id: crypto.randomUUID(),
+    text,
+    images,
+    videos,
+    pdfs,
+    createdAt: new Date().toISOString(),
+  };
+
+  const posts = readPosts();
+  posts.unshift(post);
+  writePosts(posts);
+  res.status(201).json(post);
+});
+
+app.delete('/api/blog/:id', (req, res) => {
+  if (!isMeister(req)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const posts = readPosts();
+  const index = posts.findIndex((p) => p.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  deleteMediaFiles(posts[index]);
+  posts.splice(index, 1);
+  writePosts(posts);
+  res.json({ success: true });
+});
+
+app.use((err, _req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+  if (err) {
+    return res.status(400).json({ error: err.message || 'Upload failed' });
+  }
+  next();
+});
 
 // ─── CONTACT API ───
 app.post('/api/contact', async (req, res) => {
   const { firstName, lastName, email, phone, organisation, level, teamSize, message } = req.body;
 
-  // Basic validation
   if (!firstName || !lastName || !email || !organisation || !message) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
@@ -31,7 +315,7 @@ app.post('/api/contact', async (req, res) => {
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App password, not regular password
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -77,7 +361,6 @@ app.post('/api/contact', async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    // Auto-reply to sender
     await transporter.sendMail({
       from: `"AdVentures Academy" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -105,8 +388,35 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// ─── CATCH-ALL ───
+// ─── MEISTER PAGE GUARD (before static files) ───
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (!req.path.startsWith('/meister/')) return next();
+
+  const ip = getClientIP(req);
+  if (isBlocked(ip)) return res.redirect('/');
+  if (!isMeister(req)) return res.redirect('/meister');
+  return next();
+});
+
+// ─── STATIC FILES ───
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  etag: true,
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  },
+}));
+
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  if (req.path.startsWith('/meister/')) {
+    return res.status(404).send('Not found');
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

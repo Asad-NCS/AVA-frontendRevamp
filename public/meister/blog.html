@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog (Meister) — AdVentures Academy (AVA)</title>
+  <meta name="description" content="Manage AVA blog posts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <nav id="navbar">
+    <a href="index.html" class="nav-logo" aria-label="AVA Home">
+      <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy logo">
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="our-work.html">Our Work</a>
+      <a href="blog.html" class="active">Blog</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-meister-actions">
+      <span class="meister-badge">Meister</span>
+      <button type="button" class="nav-cta meister-logout-btn" onclick="meisterLogout()">Log Out</button>
+    </div>
+    <button class="hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="our-work.html">Our Work</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <div class="page-wrap">
+    <div class="contact-hero blog-hero">
+      <span class="eyebrow">Meister · Blog</span>
+      <h1>Manage <span class="teal">Posts</span></h1>
+      <p>Create, preview, and delete blog posts for the public feed.</p>
+      <a href="/blog.html" class="btn-dark blog-preview-link" target="_blank" rel="noopener">View public blog →</a>
+    </div>
+
+    <section class="section blog-admin-section">
+      <div class="blog-admin-compose">
+        <h2 class="blog-admin-title">Create a Post</h2>
+        <form id="blogAdminForm" class="blog-admin-form">
+          <div class="form-group">
+            <label for="postText">Post text</label>
+            <textarea id="postText" name="text" rows="5" placeholder="Write your update… emojis welcome 😊🚀"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Quick emojis</label>
+            <div class="emoji-picker" id="emojiPicker">
+              <div class="emoji-picker-row" id="emojiBase"></div>
+              <div class="emoji-picker-extra" id="emojiExtra"></div>
+              <button type="button" class="emoji-btn emoji-more-btn" id="emojiMoreBtn" title="More emojis">😊+</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Attachments</label>
+            <input type="file" id="postMedia" hidden multiple accept="image/*,video/*,.pdf,application/pdf">
+            <button type="button" class="media-upload-portal" id="mediaUploadPortal">
+              <span class="media-upload-icon">＋</span>
+              <span>Add photos, videos, or PDF to view</span>
+            </button>
+            <div class="file-preview" id="mediaPreview"></div>
+          </div>
+
+          <button type="submit" class="form-submit-orange" id="postSubmitBtn">Post</button>
+          <div class="form-status" id="blogAdminStatus"></div>
+        </form>
+      </div>
+
+      <div class="blog-admin-feed-wrap">
+        <h2 class="blog-admin-title">Published Posts</h2>
+        <div class="blog-feed" id="meisterBlogFeed">
+          <div class="blog-loading">Loading posts…</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy">
+        <p>Meister area — AdVentures Academy</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="our-work.html">Our Work</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Meister</h4>
+        <a href="/blog.html" target="_blank" rel="noopener">View public blog</a>
+        <button type="button" class="footer-link-btn" onclick="meisterLogout()">Log out</button>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 AdVentures Academy (AVA). Meister mode.</p>
+    </div>
+  </footer>
+
+  <script src="../script.js" defer></script>
+  <script src="../blog.js"></script>
+  <script src="meister-ui.js"></script>
+  <script src="blog-admin.js"></script>
+</body>
+</html>

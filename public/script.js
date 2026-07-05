@@ -1,9 +1,15 @@
 // ─── NAV SCROLL ───
 const navbar = document.getElementById('navbar');
 if (navbar) {
+  let navTicking = false;
   window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 40);
-  });
+    if (navTicking) return;
+    navTicking = true;
+    requestAnimationFrame(() => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+      navTicking = false;
+    });
+  }, { passive: true });
 }
 
 // ─── MOBILE MENU ───
@@ -20,11 +26,17 @@ sto.innerHTML = '↑';
 sto.setAttribute('aria-label', 'Scroll to top');
 sto.style.cssText = 'position:fixed;bottom:28px;right:28px;width:44px;height:44px;border-radius:50%;background:#00B4A6;color:#0a0a0f;border:none;font-size:18px;font-weight:700;cursor:pointer;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:200;';
 document.body.appendChild(sto);
+let stoTicking = false;
 window.addEventListener('scroll', () => {
-  const show = window.scrollY > 400;
-  sto.style.opacity = show ? '1' : '0';
-  sto.style.transform = show ? 'translateY(0)' : 'translateY(8px)';
-});
+  if (stoTicking) return;
+  stoTicking = true;
+  requestAnimationFrame(() => {
+    const show = window.scrollY > 400;
+    sto.style.opacity = show ? '1' : '0';
+    sto.style.transform = show ? 'translateY(0)' : 'translateY(8px)';
+    stoTicking = false;
+  });
+}, { passive: true });
 sto.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // ─── PROGRAMS CAROUSEL ───
@@ -93,6 +105,26 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 });
 
 document.querySelectorAll('.reveal, [data-count]').forEach(el => io.observe(el));
+
+// ─── HERO VIDEO (defer until idle so poster paints first) ───
+const heroVideo = document.querySelector('.hero-video-wrap video');
+if (heroVideo) {
+  const loadHeroVideo = () => {
+    if (heroVideo.dataset.loaded) return;
+    const source = heroVideo.querySelector('source[data-src]');
+    if (!source) return;
+    heroVideo.dataset.loaded = '1';
+    source.src = source.dataset.src;
+    heroVideo.load();
+    heroVideo.play().catch(() => {});
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadHeroVideo, { timeout: 2500 });
+  } else {
+    setTimeout(loadHeroVideo, 800);
+  }
+}
 
 // ─── CONTACT FORM ───
 const form      = document.getElementById('contactForm');

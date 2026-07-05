@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meister Access — AVA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="meister-login-body">
+  <div class="page-wrap meister-login-wrap">
+    <div class="contact-hero meister-login-hero">
+      <span class="eyebrow">Restricted access</span>
+      <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy" class="meister-login-logo" width="140" height="46">
+      <h1>Meister <span class="teal">Portal</span></h1>
+      <p>Sign in to browse the site in admin mode and manage blog posts.</p>
+
+      <form id="meisterForm" class="meister-login-form" novalidate>
+        <div class="form-group">
+          <label for="meisterPassword">Password</label>
+          <input type="password" id="meisterPassword" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="form-submit-orange meister-login-submit" id="meisterSubmit">Sign In</button>
+        <p class="meister-login-status" id="meisterStatus" role="status" aria-live="polite"></p>
+      </form>
+
+      <a href="/index.html" class="meister-login-back">← Return to public site</a>
+    </div>
+  </div>
+  <script src="/meister.js"></script>
+</body>
+</html>

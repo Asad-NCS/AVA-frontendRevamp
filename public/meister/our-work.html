@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://ava.com.pk">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
   <nav id="navbar">
@@ -23,7 +23,10 @@
       <a href="blog.html">Blog</a>
       <a href="contact.html">Contact</a>
     </div>
-    <a href="contact.html" class="nav-cta">Work With Us</a>
+    <div class="nav-meister-actions">
+      <span class="meister-badge">Meister</span>
+      <button type="button" class="nav-cta meister-logout-btn" onclick="meisterLogout()">Log Out</button>
+    </div>
     <button class="hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
   </nav>
   <div class="mobile-menu" id="mobileMenu">
@@ -126,6 +129,9 @@
     </div>
   </footer>
 
-  <script src="script.js" defer></script>
+  
+
+  <script src="../script.js" defer></script>
+  <script src="meister-ui.js"></script>
 </body>
 </html>

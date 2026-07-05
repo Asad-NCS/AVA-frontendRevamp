@@ -6,13 +6,15 @@
   <title>Blog — AdVentures Academy (AVA)</title>
   <meta name="description" content="Blog — Insights on leadership development and corporate training from AVA.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ava.com.pk">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav id="navbar">
     <a href="index.html" class="nav-logo" aria-label="AVA Home">
-      <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy logo">
+      <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy logo" width="120" height="40" decoding="async">
     </a>
     <div class="nav-links">
       <a href="index.html">Home</a>
@@ -31,14 +33,48 @@
     <a href="blog.html">Blog</a>
     <a href="contact.html">Contact</a>
   </div>
-  <div class="page-wrap" style="padding-top:var(--nav-h);display:flex;align-items:center;justify-content:center;min-height:80vh;">
-    <div style="text-align:center;padding:48px;">
-      <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--orange);">Coming Soon</span>
-      <h1 style="font-size:clamp(36px,5vw,64px);font-weight:900;letter-spacing:-2px;margin:20px 0 16px;">Blog</h1>
-      <p style="font-size:16px;color:var(--gray);max-width:440px;margin:0 auto 32px;line-height:1.75;">This page is being built by the team. Check back soon.</p>
-      <a href="index.html" class="btn-dark" style="display:inline-block;padding:13px 28px;border-radius:100px;">← Back to Home</a>
+
+  <div class="page-wrap">
+    <div class="contact-hero blog-hero">
+      <span class="eyebrow">Updates &amp; Insights</span>
+      <h1>AVA <span class="teal">Blog</span></h1>
+      <p>News, reflections, and moments from AdVentures Academy.</p>
     </div>
+
+    <section class="section blog-section">
+      <div class="blog-feed" id="blogFeed">
+        <div class="blog-loading">Loading posts…</div>
+      </div>
+    </section>
   </div>
-  <script src="script.js"></script>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="https://ava.com.pk/media/ava-logo.png" alt="AdVentures Academy">
+        <p>AdVentures Academy — building Pakistan's future leaders, managers, and talent through tailored coaching and mentoring.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="our-work.html">Our Work</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <a href="mailto:ava@adventures.studio">ava@adventures.studio</a>
+        <a href="https://adventures.studio" target="_blank" rel="noopener">adventures.studio</a>
+        <a href="https://pk.linkedin.com/company/adventures-studio" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 AdVentures Academy (AVA). All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+  <script src="blog.js" defer></script>
 </body>
 </html>
