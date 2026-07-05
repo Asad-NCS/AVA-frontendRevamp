@@ -3982,3 +3982,52 @@ footer {
     text-align: center;
   }
 }
+
+/* ==========================================================================
+   PREMIUM INTERACTIVE BACKGROUND
+   ========================================================================== */
+body {
+  background-color: #07070a; /* Deep, rich premium dark */
+  position: relative;
+}
+
+/* The interactive mouse spotlight */
+.interactive-spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0; /* Keep it behind content but above background */
+  background: radial-gradient(
+    circle 800px at var(--mouse-x, 50vw) var(--mouse-y, -20vh), 
+    rgba(0, 180, 166, 0.07), 
+    transparent 80%
+  );
+  will-change: background;
+  transition: background 0.1s ease-out;
+}
+
+/* Subtle elegant grid overlay for texture (static, no heavy animation) */
+.premium-grid-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+}
+
+/* Ensure all page wrappers stay above the background layers */
+.page-wrap, footer {
+  position: relative;
+  z-index: 1;
+}

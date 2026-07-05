@@ -194,3 +194,31 @@ if (form) {
     }
   });
 }
+
+
+// ─── PREMIUM INTERACTIVE BACKGROUND ───
+(function() {
+  // Inject the background layers
+  const spotlight = document.createElement('div');
+  spotlight.className = 'interactive-spotlight';
+  
+  const grid = document.createElement('div');
+  grid.className = 'premium-grid-overlay';
+  
+  // Insert at the very beginning of the body
+  document.body.insertBefore(spotlight, document.body.firstChild);
+  document.body.insertBefore(grid, document.body.firstChild);
+
+  // Track mouse for the spotlight effect
+  let ticking = false;
+  window.addEventListener('mousemove', (e) => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        spotlight.style.setProperty('--mouse-x', `${e.clientX}px`);
+        spotlight.style.setProperty('--mouse-y', `${e.clientY}px`);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+})();
