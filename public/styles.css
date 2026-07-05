@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #0a0a0f;
   --bg2: #0f0f17;
   --bg3: #13131e;
@@ -977,7 +977,7 @@ nav.scrolled {
   margin-bottom: 0;
 }
 
-.contact-left p + .contact-details,
+.contact-left p+.contact-details,
 .contact-left .contact-details {
   margin-top: 32px;
 }
@@ -1666,7 +1666,7 @@ footer {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .level-card {
@@ -1678,6 +1678,8 @@ footer {
   flex-direction: column;
   gap: 0;
   transition: border-color 0.25s;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .level-card:hover {
@@ -3023,7 +3025,7 @@ body:not(:has(.hero)) .page-wrap {
   margin-bottom: 12px;
 }
 
-.meister-login-hero > p {
+.meister-login-hero>p {
   max-width: 420px;
   margin: 0 auto 32px;
   color: var(--gray);
@@ -3544,6 +3546,7 @@ body.meister-mode .meister-logout-btn {
 }
 
 @media (max-width: 768px) {
+
   .section,
   .section-alt {
     padding: 64px 20px;
@@ -3582,6 +3585,7 @@ body.meister-mode .meister-logout-btn {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
