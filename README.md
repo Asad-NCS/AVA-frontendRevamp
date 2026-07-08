@@ -36,6 +36,8 @@ Then open `http://localhost:3000`
 5. Paste into `.env` as `EMAIL_PASS`
 
 ## File Structure
+
+```
 ava-revamp/
 ├── public/
 │   ├── images/           ← Site image assets
@@ -58,6 +60,7 @@ ava-revamp/
 ├── .env.example           ← Copy to .env
 ├── .gitignore
 └── README.md
+```
 
 ## Deployment
 
