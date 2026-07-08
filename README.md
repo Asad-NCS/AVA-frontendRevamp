@@ -1,8 +1,11 @@
 # AVA Revamp — AdVentures Academy
 
-Homepage + Contact page revamp for [ava.com.pk](https://ava.com.pk).
+Frontend revamp for [ava.com.pk](https://ava.com.pk).
+
+**Live:** [ava-frontendrevamp.vercel.app](https://ava-frontendrevamp.vercel.app)
 
 ## Stack
+
 - **Frontend:** HTML, CSS, JS (vanilla — no build step needed)
 - **Backend:** Node.js + Express
 - **Email:** Nodemailer (Gmail)
@@ -25,6 +28,7 @@ npm start         # production
 Then open `http://localhost:3000`
 
 ## Gmail App Password Setup
+
 1. Go to [myaccount.google.com](https://myaccount.google.com)
 2. Security → 2-Step Verification (must be ON)
 3. Search "App Passwords"
@@ -32,19 +36,29 @@ Then open `http://localhost:3000`
 5. Paste into `.env` as `EMAIL_PASS`
 
 ## File Structure
-```
 ava-revamp/
 ├── public/
-│   ├── index.html       ← Homepage (your task)
-│   ├── contact.html     ← Contact page (your task)
-│   ├── styles.css
-│   └── script.js
-├── server.js            ← Express + contact form API
+│   ├── images/           ← Site image assets
+│   ├── media/            ← Cards and zigzag graphics
+│   ├── uploads/          ← Blog upload assets
+│   ├── index.html
+│   ├── about.html
+│   ├── contact.html
+│   ├── our-work.html
+│   ├── meister.html
+│   ├── blog.html
+│   ├── meister.js
+│   ├── meister-ui.js
+│   ├── blog.js
+│   ├── blog-admin.js
+│   ├── script.js
+│   └── styles.css
+├── server.js             ← Express + contact form API
 ├── package.json
-├── .env.example         ← Copy to .env
+├── .env.example           ← Copy to .env
 ├── .gitignore
 └── README.md
-```
 
 ## Deployment
-Push to GitHub. Deploy on Railway, Render, or Vercel (with serverless functions).
+
+Deployed on Vercel via serverless functions.
