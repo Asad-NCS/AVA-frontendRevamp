@@ -3850,6 +3850,119 @@ footer {
   }
 }
 
+.hero h1 .teal {
+  color: var(--teal);
+}
+
+/* ==========================================================================
+   CONTACT PAGE HERO — matches Home cinematic background treatment
+   ========================================================================== */
+body:has(.hero--contact) .page-wrap {
+  padding-top: var(--nav-h);
+}
+
+body:has(.hero--contact) nav {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero--contact {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 844 / 342;
+  align-items: center;
+}
+
+.hero-image-wrap {
+  overflow: hidden;
+}
+
+.hero--contact .hero-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transform: scale(1);
+  animation: heroImageKenBurns 28s ease-in-out infinite alternate;
+  will-change: transform;
+  transform-origin: center top;
+}
+
+.hero--contact .hero-video-wrap::after {
+  background: linear-gradient(
+    to right,
+    rgba(10, 10, 15, 0.92) 0%,
+    rgba(10, 10, 15, 0.72) 42%,
+    rgba(10, 10, 15, 0.28) 100%
+  );
+}
+
+.hero--contact .hero-content {
+  max-width: 720px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+.hero--contact .hero-sub {
+  max-width: 520px;
+  font-size: 17px;
+  margin-bottom: 0;
+}
+
+.hero--contact .hero-watermark {
+  font-size: 18vw;
+  top: 58%;
+}
+
+@keyframes heroImageKenBurns {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.04);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero--contact .hero-bg-image {
+    object-position: center top;
+  }
+
+  .hero--contact .hero-content {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .hero--contact h1 {
+    font-size: clamp(32px, 9vw, 48px);
+    margin-bottom: 12px;
+  }
+
+  .hero--contact .hero-sub {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .hero--contact .hero-video-wrap::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 10, 15, 0.88) 0%,
+      rgba(10, 10, 15, 0.55) 55%,
+      rgba(10, 10, 15, 0.82) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-image {
+    animation: none;
+  }
+}
+
 /* ==========================================================================
    PROCESS ZIGZAG SECTION (About Page)
    ========================================================================== */
