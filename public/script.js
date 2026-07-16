@@ -27,13 +27,22 @@ sto.setAttribute('aria-label', 'Scroll to top');
 sto.style.cssText = 'position:fixed;bottom:28px;right:28px;width:44px;height:44px;border-radius:50%;background:#00B4A6;color:#0a0a0f;border:none;font-size:18px;font-weight:700;cursor:pointer;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:200;';
 document.body.appendChild(sto);
 let stoTicking = false;
+// Hide the button when the footer is in view so it never overlaps footer content
+let footerVisible = false;
+const footerEl = document.querySelector('footer');
+if (footerEl && 'IntersectionObserver' in window) {
+  new IntersectionObserver((entries) => {
+    footerVisible = entries[0].isIntersecting;
+  }, { threshold: 0 }).observe(footerEl);
+}
 window.addEventListener('scroll', () => {
   if (stoTicking) return;
   stoTicking = true;
   requestAnimationFrame(() => {
-    const show = window.scrollY > 400;
+    const show = window.scrollY > 400 && !footerVisible;
     sto.style.opacity = show ? '1' : '0';
     sto.style.transform = show ? 'translateY(0)' : 'translateY(8px)';
+    sto.style.pointerEvents = show ? 'auto' : 'none';
     stoTicking = false;
   });
 }, { passive: true });
