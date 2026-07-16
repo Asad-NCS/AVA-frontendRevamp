@@ -1,4 +1,4 @@
-const form = document.getElementById('blogAdminForm');
+const blogAdminFormEl = document.getElementById('blogAdminForm');
 const postText = document.getElementById('postText');
 const postMedia = document.getElementById('postMedia');
 const mediaPortal = document.getElementById('mediaUploadPortal');
@@ -136,7 +136,7 @@ postMedia?.addEventListener('change', () => {
   renderMediaPreview();
 });
 
-form?.addEventListener('submit', async (e) => {
+blogAdminFormEl?.addEventListener('submit', async (e) => {
   e.preventDefault();
   showStatus('');
   submitBtn.disabled = true;

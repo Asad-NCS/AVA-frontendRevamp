@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { Pool } = require('pg');
 const cookieParser = require('cookie-parser');
 
@@ -10,6 +12,30 @@ app.use(cookieParser());
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'meister-ava-2026';
+
+// ── FILE UPLOAD SETUP ─────────────────────────────────────────────────────────
+const uploadDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${path.extname(file.originalname)}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB per file
+  fileFilter: (req, file, cb) => {
+    const allowed = /^image\/|^video\/|^application\/pdf$/;
+    if (allowed.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Unsupported file type'));
+  },
+});
 
 // ── MEISTER PAGE ROUTES (before static so /meister hits this, not a 404) ─────
 app.get('/meister', (req, res) => {
@@ -60,7 +86,10 @@ app.post('/api/meister/logout', (req, res) => {
 app.get('/api/blog', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, title, slug, content, published, created_at FROM blog_posts WHERE published = true ORDER BY created_at DESC'
+      `SELECT id, text, images, videos, pdfs, created_at AS "createdAt"
+       FROM blog_posts
+       WHERE published = true
+       ORDER BY created_at DESC`
     );
     res.json(result.rows);
   } catch (err) {
@@ -69,16 +98,35 @@ app.get('/api/blog', async (req, res) => {
   }
 });
 
-app.post('/api/blog', async (req, res) => {
+app.post('/api/blog', upload.array('media', 10), async (req, res) => {
   if (req.cookies.meister_auth !== 'authenticated') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const { title, content } = req.body;
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  const text = (req.body.text || '').trim();
+  const files = req.files || [];
+
+  if (!text && files.length === 0) {
+    return res.status(400).json({ error: 'Post must include text or at least one attachment' });
+  }
+
+  const images = [];
+  const videos = [];
+  const pdfs = [];
+
+  files.forEach((file) => {
+    const url = `/uploads/${file.filename}`;
+    if (file.mimetype.startsWith('image/')) images.push(url);
+    else if (file.mimetype.startsWith('video/')) videos.push(url);
+    else if (file.mimetype === 'application/pdf') pdfs.push(url);
+  });
+
   try {
     const result = await pool.query(
-      'INSERT INTO blog_posts (title, slug, content, published) VALUES ($1, $2, $3, true) RETURNING *',
-      [title, slug, content]
+      `INSERT INTO blog_posts (text, images, videos, pdfs, published)
+       VALUES ($1, $2, $3, $4, true)
+       RETURNING id, text, images, videos, pdfs, created_at AS "createdAt"`,
+      [text, JSON.stringify(images), JSON.stringify(videos), JSON.stringify(pdfs)]
     );
     res.json(result.rows[0]);
   } catch (err) {
