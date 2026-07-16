@@ -4,7 +4,6 @@ const { Pool } = require('pg');
 const cookieParser = require('cookie-parser');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
@@ -12,7 +11,7 @@ app.use(cookieParser());
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'meister-ava-2026';
 
-// ── MEISTER PAGE ROUTES (must come before static middleware) ──────────────────
+// ── MEISTER PAGE ROUTES (before static so /meister hits this, not a 404) ─────
 app.get('/meister', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meister.html'));
 });
@@ -49,8 +48,7 @@ app.post('/api/meister/login', (req, res) => {
 });
 
 app.get('/api/meister/status', (req, res) => {
-  const authenticated = req.cookies.meister_auth === 'authenticated';
-  res.json({ authenticated });
+  res.json({ authenticated: req.cookies.meister_auth === 'authenticated' });
 });
 
 app.post('/api/meister/logout', (req, res) => {
@@ -117,5 +115,10 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// ── START ─────────────────────────────────────────────────────────────────────
-app.listen(port, () => console.log(`AVA server running on port ${port}`));
+// Export for Vercel serverless — also support local dev with listen()
+module.exports = app;
+
+if (require.main === module) {
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => console.log(`AVA server running on port ${port}`));
+}

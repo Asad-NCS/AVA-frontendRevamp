@@ -1,132 +1,65 @@
-// Animated Gradient Mesh Background
-// Premium animation inspired by user's wave reference, but more sophisticated
+(function () {
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
 
-class GradientMeshBackground {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    if (!this.canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
 
-    this.ctx = this.canvas.getContext('2d');
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
-    this.time = 0;
-    this.particles = [];
-    this.gradients = [];
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-    this.resizeCanvas();
-    this.initParticles();
-    this.animate();
+  // Wave lines — inspired by the user's reference image
+  const LINES = 18;
+  const COLORS = [
+    '138, 43, 226',   // blueviolet
+    '80,  0, 200',    // deep purple
+    '0,  120, 255',   // blue
+    '100, 60, 240',   // medium purple
+    '0,  180, 220',   // teal
+  ];
 
-    window.addEventListener('resize', () => this.resizeCanvas());
+  function wave(x, i, time) {
+    const freq  = 0.0018 + i * 0.0003;
+    const amp   = 55 + i * 10;
+    const speed = 0.4 + i * 0.07;
+    const phase = (i * Math.PI * 2) / LINES;
+    return Math.sin(x * freq + time * speed + phase) * amp
+         + Math.sin(x * freq * 2.1 + time * speed * 0.7 + phase) * (amp * 0.4);
   }
 
-  resizeCanvas() {
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
-  }
+  function draw() {
+    // Dark base
+    ctx.fillStyle = '#07071a';
+    ctx.fillRect(0, 0, W, H);
 
-  initParticles() {
-    // Create gradient control points that will animate
-    const count = 5;
-    this.gradients = [];
+    const midY = H * 0.5;
 
-    for (let i = 0; i < count; i++) {
-      this.gradients.push({
-        x: Math.random() * this.width,
-        y: Math.random() * this.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        color: this.getGradientColor(i / count),
-        radius: 200 + Math.random() * 300,
-      });
-    }
-  }
+    for (let i = 0; i < LINES; i++) {
+      const colorIdx = i % COLORS.length;
+      const alpha    = 0.18 + (i / LINES) * 0.22;
+      const lineW    = 1.2 + (i % 4) * 0.5;
 
-  getGradientColor(t) {
-    // Purple → Blue → Teal color palette
-    const colors = [
-      'rgba(157, 78, 221, 0.3)',    // Purple #9d4edd
-      'rgba(58, 134, 255, 0.3)',    // Blue #3a86ff
-      'rgba(0, 200, 200, 0.3)',     // Teal #00c8c8
-      'rgba(100, 50, 200, 0.25)',   // Dark purple
-      'rgba(80, 180, 220, 0.25)',   // Light blue
-    ];
-    const index = Math.floor(t * colors.length) % colors.length;
-    return colors[index];
-  }
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${COLORS[colorIdx]}, ${alpha.toFixed(2)})`;
+      ctx.lineWidth   = lineW;
+      ctx.shadowColor = `rgba(${COLORS[colorIdx]}, 0.4)`;
+      ctx.shadowBlur  = 8 + i * 1.5;
 
-  drawBlurredGradient(x, y, radius, color) {
-    // Create a radial gradient for smooth blending
-    const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius);
-
-    // Parse the color to get the RGB values and vary the alpha
-    gradient.addColorStop(0, color.replace('0.3', '0.6'));
-    gradient.addColorStop(0.5, color.replace('0.3', '0.2'));
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-  }
-
-  animate = () => {
-    // Clear canvas
-    this.ctx.fillStyle = '#0a0a0f';
-    this.ctx.fillRect(0, 0, this.width, this.height);
-
-    // Update gradient positions
-    this.gradients.forEach((grad) => {
-      grad.x += grad.vx;
-      grad.y += grad.vy;
-
-      // Bounce off edges
-      if (grad.x < 0 || grad.x > this.width) grad.vx *= -1;
-      if (grad.y < 0 || grad.y > this.height) grad.vy *= -1;
-
-      // Clamp to bounds
-      grad.x = Math.max(0, Math.min(this.width, grad.x));
-      grad.y = Math.max(0, Math.min(this.height, grad.y));
-    });
-
-    // Draw gradients with blending
-    this.ctx.globalCompositeOperation = 'lighter';
-    this.gradients.forEach((grad) => {
-      this.drawBlurredGradient(grad.x, grad.y, grad.radius, grad.color);
-    });
-
-    // Reset composite operation
-    this.ctx.globalCompositeOperation = 'source-over';
-
-    // Add subtle noise overlay for texture
-    this.addNoiseOverlay();
-
-    this.time += 0.0005;
-    requestAnimationFrame(this.animate);
-  };
-
-  addNoiseOverlay() {
-    // Add subtle noise for texture
-    const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-    const data = imageData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 5;
-      data[i] += noise;     // R
-      data[i + 1] += noise; // G
-      data[i + 2] += noise; // B
-      // data[i + 3] is alpha, leave it alone
+      for (let x = 0; x <= W; x += 3) {
+        const y = midY + wave(x, i, t) + (i - LINES / 2) * 18;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     }
 
-    this.ctx.putImageData(imageData, 0, 0);
+    ctx.shadowBlur = 0;
+    t += 0.012;
+    requestAnimationFrame(draw);
   }
-}
 
-// Initialize on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    new GradientMeshBackground('bg-canvas');
-  });
-} else {
-  new GradientMeshBackground('bg-canvas');
-}
+  draw();
+})();
