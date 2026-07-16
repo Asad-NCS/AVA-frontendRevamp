@@ -4371,3 +4371,34 @@ body {
     flex: 0 0 calc(50% - 6px);
   }
 }
+
+/* ==========================================================================
+   BACKGROUND BLEND OVERRIDES — darken section photos so they blend with
+   the animated canvas background instead of clashing with it
+   ========================================================================== */
+
+/* Nebula / Who We Are section — much heavier dark overlay */
+.hero--nebula .hero-video-wrap::after {
+  background: linear-gradient(
+    155deg,
+    rgba(7, 7, 26, 0.97) 0%,
+    rgba(7, 7, 26, 0.93) 40%,
+    rgba(7, 7, 26, 0.85) 100%
+  ) !important;
+}
+
+/* Contact hero photo — heavier overlay on the bright right side */
+.hero--contact .hero-video-wrap::after {
+  background: linear-gradient(
+    to right,
+    rgba(7, 7, 26, 0.97) 0%,
+    rgba(7, 7, 26, 0.90) 42%,
+    rgba(7, 7, 26, 0.82) 100%
+  ) !important;
+}
+
+/* Desaturate and dim both background images themselves so colours stop clashing */
+.hero--nebula .hero-bg-image,
+.hero--contact .hero-bg-image {
+  filter: saturate(0.25) brightness(0.45) !important;
+}
