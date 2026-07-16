@@ -1,7 +1,34 @@
+# Dependencies
 node_modules/
+
+# Environment
 .env
+.env.local
+.env.*.local
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS / editor junk
 .DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Build / deploy
+.vercel
+.next/
+dist/
+
+# User uploads (keep the folder, ignore contents)
 public/uploads/*
 !public/uploads/.gitkeep
-.vercel
+
+# Stray media dumped at repo root — real assets live in public/images or public/media
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.mp4
