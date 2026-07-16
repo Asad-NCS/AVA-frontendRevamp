@@ -26,10 +26,26 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Media fields may come back as a real array (jsonb column), a JSON string
+// (text column), or null/undefined (older rows). Normalize all of these to
+// a plain array so renderPost never chokes on .map / .length.
+function parseMediaField(field) {
+  if (Array.isArray(field)) return field;
+  if (typeof field === 'string') {
+    try {
+      const parsed = JSON.parse(field);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 function renderPost(post) {
-  const images = post.images || [];
-  const videos = post.videos || [];
-  const pdfs = post.pdfs || [];
+  const images = parseMediaField(post.images);
+  const videos = parseMediaField(post.videos);
+  const pdfs = parseMediaField(post.pdfs);
   const textHtml = post.text
     ? `<p class="blog-post-text">${escapeHtml(post.text).replace(/\n/g, '<br>')}</p>`
     : '';
