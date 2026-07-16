@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'AVA — AdVentures Academy',
+  description: "Where Pakistan's leaders, managers and future talent get built",
   generator: 'v0.app',
   icons: {
     icon: [
@@ -40,7 +40,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="/animations/background.js" defer></script>
+      </head>
       <body className="antialiased">
+        <canvas id="bg-canvas" className="bg-canvas"></canvas>
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
