@@ -8,19 +8,33 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-// Admin password
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'meister-ava-2026';
 
-// ═════════════════════════════════════ MEISTER AUTH ═════════════════════════════════════
-app.post('/api/meister/login', async (req, res) => {
+// ── MEISTER PAGE ROUTES (must come before static middleware) ──────────────────
+app.get('/meister', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister.html'));
+});
+app.get('/meister/blog', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'blog.html'));
+});
+app.get('/meister/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'about.html'));
+});
+app.get('/meister/our-work', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'our-work.html'));
+});
+app.get('/meister/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'contact.html'));
+});
+
+// ── STATIC FILES ──────────────────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ── MEISTER AUTH API ──────────────────────────────────────────────────────────
+app.post('/api/meister/login', (req, res) => {
   const { password } = req.body;
-  
   if (password === ADMIN_PASSWORD) {
     res.cookie('meister_auth', 'authenticated', {
       httpOnly: true,
@@ -44,7 +58,7 @@ app.post('/api/meister/logout', (req, res) => {
   res.json({ success: true });
 });
 
-// ═════════════════════════════════════ BLOG APIS ═════════════════════════════════════
+// ── BLOG API ──────────────────────────────────────────────────────────────────
 app.get('/api/blog', async (req, res) => {
   try {
     const result = await pool.query(
@@ -58,14 +72,11 @@ app.get('/api/blog', async (req, res) => {
 });
 
 app.post('/api/blog', async (req, res) => {
-  const authenticated = req.cookies.meister_auth === 'authenticated';
-  if (!authenticated) {
+  if (req.cookies.meister_auth !== 'authenticated') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
   const { title, content } = req.body;
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
   try {
     const result = await pool.query(
       'INSERT INTO blog_posts (title, slug, content, published) VALUES ($1, $2, $3, true) RETURNING *',
@@ -79,11 +90,9 @@ app.post('/api/blog', async (req, res) => {
 });
 
 app.delete('/api/blog/:id', async (req, res) => {
-  const authenticated = req.cookies.meister_auth === 'authenticated';
-  if (!authenticated) {
+  if (req.cookies.meister_auth !== 'authenticated') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
   try {
     await pool.query('DELETE FROM blog_posts WHERE id = $1', [req.params.id]);
     res.json({ success: true });
@@ -93,13 +102,12 @@ app.delete('/api/blog/:id', async (req, res) => {
   }
 });
 
-// ═════════════════════════════════════ CONTACT APIS ═════════════════════════════════════
+// ── CONTACT API ───────────────────────────────────────────────────────────────
 app.post('/api/contact', async (req, res) => {
   const { firstName, lastName, email, phone, organisation, level, teamSize, message } = req.body;
-
   try {
     await pool.query(
-      'INSERT INTO contact_submissions (first_name, last_name, email, phone, organisation, level, team_size, message) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      'INSERT INTO contact_submissions (first_name, last_name, email, phone, organisation, level, team_size, message) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
       [firstName, lastName, email, phone, organisation, level, teamSize, message]
     );
     res.json({ success: true });
@@ -109,34 +117,5 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`AVA server running on port ${port}`);
-});
-
-// Explicit routes for meister pages
-app.get('/meister', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister.html'));
-});
-
-app.get('/meister/index.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'index.html'));
-});
-
-app.get('/meister/blog', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'blog.html'));
-});
-
-app.get('/meister/about', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'about.html'));
-});
-
-app.get('/meister/our-work', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'our-work.html'));
-});
-
-app.get('/meister/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'contact.html'));
-
-app.listen(port, () => {
-  console.log(`AVA server running on port ${port}`);
-});
+// ── START ─────────────────────────────────────────────────────────────────────
+app.listen(port, () => console.log(`AVA server running on port ${port}`));
