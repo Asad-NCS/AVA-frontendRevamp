@@ -1,6 +1,35 @@
 {
-  "buildCommand": "npm install",
-  "devCommand": "npm start",
-  "installCommand": "npm install",
-  "framework": null
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
+    },
+    {
+      "src": "/animations/(.*)",
+      "dest": "/public/animations/$1"
+    },
+    {
+      "src": "/meister/(.*)",
+      "dest": "/public/meister/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@DATABASE_URL",
+    "ADMIN_PASSWORD": "@ADMIN_PASSWORD"
+  }
 }
