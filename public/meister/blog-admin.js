@@ -2,8 +2,8 @@ const blogAdminFormEl = document.getElementById('blogAdminForm');
 const postText = document.getElementById('postText');
 const postMedia = document.getElementById('postMedia');
 const mediaPortal = document.getElementById('mediaUploadPortal');
-const statusEl = document.getElementById('blogAdminStatus');
-const submitBtn = document.getElementById('postSubmitBtn');
+const blogAdminStatusEl = document.getElementById('blogAdminStatus');
+const blogAdminSubmitBtn = document.getElementById('postSubmitBtn');
 const meisterFeed = document.getElementById('meisterBlogFeed');
 const emojiPicker = document.getElementById('emojiPicker');
 const emojiMoreBtn = document.getElementById('emojiMoreBtn');
@@ -16,8 +16,8 @@ const BASE_EMOJIS = ['😊', '🚀', '💡', '🎯', '👏', '🔥', '✨', '�
 const EXTRA_EMOJIS = ['🎉', '❤️', '💪', '🙌', '⭐', '🏆', '📈', '🤝', '☕', '🌟', '✅', '📝'];
 
 function showStatus(message, type) {
-  statusEl.textContent = message;
-  statusEl.className = `form-status ${type || ''}`;
+  blogAdminStatusEl.textContent = message;
+  blogAdminStatusEl.className = `form-status ${type || ''}`;
 }
 
 function insertEmoji(emoji) {
@@ -139,8 +139,8 @@ postMedia?.addEventListener('change', () => {
 blogAdminFormEl?.addEventListener('submit', async (e) => {
   e.preventDefault();
   showStatus('');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Posting…';
+  blogAdminSubmitBtn.disabled = true;
+  blogAdminSubmitBtn.textContent = 'Posting…';
 
   const formData = new FormData();
   formData.append('text', postText.value.trim());
@@ -163,8 +163,8 @@ blogAdminFormEl?.addEventListener('submit', async (e) => {
   } catch (err) {
     showStatus(err.message || 'Could not publish post.', 'error');
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Post';
+    blogAdminSubmitBtn.disabled = false;
+    blogAdminSubmitBtn.textContent = 'Post';
   }
 });
 
