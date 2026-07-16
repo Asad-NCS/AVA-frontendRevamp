@@ -196,6 +196,117 @@ if (form) {
 }
 
 
+// ─── PILLARS CAROUSEL (About — Who We Are) ───
+const pillarsCarousel = document.getElementById('pillarsCarousel');
+const pillarPrevBtn = document.getElementById('pillarPrev');
+const pillarNextBtn = document.getElementById('pillarNext');
+
+if (pillarsCarousel && pillarPrevBtn && pillarNextBtn) {
+  const PILLAR_INTERVAL = 3000;
+  const PILLAR_MAX_STEP = 2;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let pillarStep = 0;
+  let pillarDirection = 1;
+  let pillarTimer = null;
+  let pillarPaused = false;
+
+  const getPillarGap = () => {
+    const styles = getComputedStyle(pillarsCarousel);
+    return parseFloat(styles.columnGap || styles.gap) || 16;
+  };
+
+  const getPillarCardWidth = () => {
+    const card = pillarsCarousel.querySelector('.program-card-c');
+    return card ? card.offsetWidth : 0;
+  };
+
+  const getPillarScrollAmount = () => getPillarCardWidth() + getPillarGap();
+
+  const scrollPillarsToStep = (step, smooth = true) => {
+    const left = getPillarScrollAmount() * step;
+    pillarsCarousel.classList.add('is-scrolling');
+    pillarsCarousel.scrollTo({
+      left,
+      behavior: smooth && !prefersReducedMotion ? 'smooth' : 'auto',
+    });
+    window.setTimeout(() => pillarsCarousel.classList.remove('is-scrolling'), smooth ? 520 : 0);
+  };
+
+  const updatePillarBtns = () => {
+    pillarPrevBtn.style.opacity = pillarStep <= 0 ? '0.35' : '1';
+    pillarNextBtn.style.opacity = pillarStep >= PILLAR_MAX_STEP ? '0.35' : '1';
+  };
+
+  const setPillarStep = (step, smooth = true) => {
+    pillarStep = Math.max(0, Math.min(PILLAR_MAX_STEP, step));
+    scrollPillarsToStep(pillarStep, smooth);
+    updatePillarBtns();
+  };
+
+  const advancePillars = () => {
+    if (pillarStep >= PILLAR_MAX_STEP) pillarDirection = -1;
+    else if (pillarStep <= 0) pillarDirection = 1;
+    setPillarStep(pillarStep + pillarDirection);
+  };
+
+  const startPillarAuto = () => {
+    if (pillarTimer || pillarPaused || prefersReducedMotion) return;
+    pillarTimer = window.setInterval(advancePillars, PILLAR_INTERVAL);
+  };
+
+  const stopPillarAuto = () => {
+    if (!pillarTimer) return;
+    window.clearInterval(pillarTimer);
+    pillarTimer = null;
+  };
+
+  const resetPillarAuto = () => {
+    stopPillarAuto();
+    startPillarAuto();
+  };
+
+  pillarNextBtn.addEventListener('click', () => {
+    if (pillarStep >= PILLAR_MAX_STEP) return;
+    pillarDirection = 1;
+    setPillarStep(pillarStep + 1);
+    resetPillarAuto();
+  });
+
+  pillarPrevBtn.addEventListener('click', () => {
+    if (pillarStep <= 0) return;
+    pillarDirection = -1;
+    setPillarStep(pillarStep - 1);
+    resetPillarAuto();
+  });
+
+  const pillarsBlock = pillarsCarousel.closest('.who-we-are-pillars-block');
+  if (pillarsBlock) {
+    pillarsBlock.addEventListener('mouseenter', () => {
+      pillarPaused = true;
+      stopPillarAuto();
+    });
+    pillarsBlock.addEventListener('mouseleave', () => {
+      pillarPaused = false;
+      startPillarAuto();
+    });
+  }
+
+  window.addEventListener('resize', () => scrollPillarsToStep(pillarStep, false));
+
+  const pillarObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) startPillarAuto();
+      else stopPillarAuto();
+    });
+  }, { threshold: 0.35 });
+
+  pillarObserver.observe(pillarsCarousel);
+
+  setPillarStep(0, false);
+}
+
+
 // ─── PREMIUM INTERACTIVE BACKGROUND ───
 (function() {
   // Inject the background layers

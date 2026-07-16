@@ -66,58 +66,70 @@
       </div>
     </section>
 
-    <!-- WHAT WE DO + FOUR PILLARS -->
-    <section class="section">
-      <div class="about-grid">
-        <div class="about-text reveal">
-          <span class="section-label">Who We Are</span>
+    <!-- WHO WE ARE — nebula background, intro + pillars in one band -->
+    <section class="hero hero--nebula who-we-are-hero" id="who-we-are">
+      <div class="hero-video-wrap hero-image-wrap" aria-hidden="true">
+        <img src="media/nebula.jpg" alt="" width="1024" height="593" loading="eager" fetchpriority="high"
+          decoding="async" class="hero-bg-image">
+      </div>
+
+      <div class="who-we-are-stage-inner reveal">
+        <div class="who-we-are-hero-content">
+          <span class="hero-eyebrow">Who We Are</span>
           <h2>Practical capability building for every level of your organization</h2>
-          <p>AdVentures Academy (AVA) delivers practical capability-building programs across early-career professionals,
-            middle management, and C-suite leadership.</p>
-          <p>Through tailored training, coaching, and mentoring, we help organizations develop leaders, unlock
-            potential, and create performance that lasts.</p>
-          <ul class="about-bullets">
-            <li>Tailored support for individual strengths, gaps, and goals</li>
-            <li>Sharper judgment, confidence, and people leadership</li>
-            <li>Continuous learning and sustainable behavior change</li>
-          </ul>
+          <p class="hero-sub">AdVentures Academy (AVA) delivers practical capability-building programs across
+            early-career professionals, middle management, and C-suite leadership.</p>
+          <p class="hero-sub">Through tailored training, coaching, and mentoring, we help organizations develop leaders,
+            unlock potential, and create performance that lasts.</p>
         </div>
-        <div class="pillars-list reveal reveal-d2">
-          <article class="pillar-item">
-            <div class="pillar-head">
-              <span class="pillar-num-label">Pillar 01</span>
-              <span class="pillar-accent pillar-accent-teal"></span>
+
+        <div class="who-we-are-pillars-block">
+          <div class="carousel-header who-we-are-carousel-header">
+            <span class="section-label">Our Pillars</span>
+            <div class="carousel-btns">
+              <button class="carousel-btn carousel-btn--sm" id="pillarPrev" aria-label="Previous pillar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button class="carousel-btn carousel-btn--sm" id="pillarNext" aria-label="Next pillar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
             </div>
-            <h3>Adaptive Leadership</h3>
-            <p>Build trust, emotional intelligence, and change-ready leadership to navigate complexity at every level.
-            </p>
-          </article>
-          <article class="pillar-item">
-            <div class="pillar-head">
-              <span class="pillar-num-label">Pillar 02</span>
-              <span class="pillar-accent pillar-accent-orange"></span>
-            </div>
-            <h3>High-Impact Communication</h3>
-            <p>Develop executive presence and ICF-aligned coaching skills that unlock team potential and drive growth.
-            </p>
-          </article>
-          <article class="pillar-item">
-            <div class="pillar-head">
-              <span class="pillar-num-label">Pillar 03</span>
-              <span class="pillar-accent pillar-accent-teal"></span>
-            </div>
-            <h3>Growth &amp; Innovation Mindset</h3>
-            <p>Cultivate agile thinking, continuous learning, and entrepreneurial problem-solving across your
-              organization.</p>
-          </article>
-          <article class="pillar-item">
-            <div class="pillar-head">
-              <span class="pillar-num-label">Pillar 04</span>
-              <span class="pillar-accent pillar-accent-orange"></span>
-            </div>
-            <h3>Results-Driven Execution</h3>
-            <p>Close the strategy-to-execution gap using OKRs, accountability systems, and 360-degree feedback.</p>
-          </article>
+          </div>
+
+          <div class="programs-carousel who-we-are-carousel" id="pillarsCarousel">
+            <article class="program-card-c program-card-c--pillar">
+              <div class="program-card-c-body">
+                <span class="pillar-card-label">Pillar 01</span>
+                <h3>Adaptive Leadership</h3>
+                <p>Trust, emotional intelligence, and change-ready leadership at every level.</p>
+              </div>
+            </article>
+            <article class="program-card-c program-card-c--pillar program-card-c--pillar-orange">
+              <div class="program-card-c-body">
+                <span class="pillar-card-label">Pillar 02</span>
+                <h3>High-Impact Communication</h3>
+                <p>Executive presence and coaching skills that unlock team potential.</p>
+              </div>
+            </article>
+            <article class="program-card-c program-card-c--pillar">
+              <div class="program-card-c-body">
+                <span class="pillar-card-label">Pillar 03</span>
+                <h3>Growth &amp; Innovation Mindset</h3>
+                <p>Agile thinking, continuous learning, and entrepreneurial problem-solving.</p>
+              </div>
+            </article>
+            <article class="program-card-c program-card-c--pillar program-card-c--pillar-orange">
+              <div class="program-card-c-body">
+                <span class="pillar-card-label">Pillar 04</span>
+                <h3>Results-Driven Execution</h3>
+                <p>OKRs, accountability, and feedback loops that close the execution gap.</p>
+              </div>
+            </article>
+          </div>
         </div>
       </div>
     </section>
