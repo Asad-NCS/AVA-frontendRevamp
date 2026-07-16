@@ -4971,3 +4971,56 @@ body {
   filter: none !important;
 }
 
+
+/* ============================================================
+   HERO -> STATS BLEND (final override)
+   Removes the hard seam between the hero video and the WebGL
+   shader section below by cross-fading both edges into the
+   shader's navy base color (#0d1427).
+   ============================================================ */
+
+/* Fade the bottom of the hero photo/video into navy */
+.hero-video-wrap {
+  overflow: hidden;
+}
+.hero-video-wrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 260px;
+  background: linear-gradient(to bottom,
+    rgba(13, 20, 39, 0) 0%,
+    rgba(13, 20, 39, 0.55) 55%,
+    #0d1427 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Let the shader show through the stats strip, drop the hard
+   borders, and fade the shader in from navy at the top edge */
+.problem-stats-strip {
+  background: transparent !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  position: relative;
+  overflow: hidden;
+}
+.problem-stats-strip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 170px;
+  background: linear-gradient(to bottom,
+    #0d1427 0%,
+    rgba(13, 20, 39, 0) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.problem-stats-inner {
+  position: relative;
+  z-index: 2;
+}
