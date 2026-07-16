@@ -4,32 +4,12 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/animations/(.*)",
-      "dest": "/public/animations/$1"
-    },
-    {
-      "src": "/meister/(.*)",
-      "dest": "/public/meister/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "server.js"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@DATABASE_URL",
-    "ADMIN_PASSWORD": "@ADMIN_PASSWORD"
-  }
+  ]
 }
