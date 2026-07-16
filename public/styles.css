@@ -4663,3 +4663,89 @@ body {
   padding: 48px 56px !important;
 }
 
+
+/* ============================================================
+   PILLAR CARDS — 2x2 grid, no scroll animation
+   ============================================================ */
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.pillar-card {
+  background: rgba(10, 10, 22, 0.5) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 16px !important;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pillar-card:hover {
+  border-color: rgba(0, 180, 166, 0.25) !important;
+  box-shadow: 0 8px 40px rgba(0, 180, 166, 0.12) !important;
+}
+
+.pillar-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+}
+
+.pillar-card p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+}
+
+.pillar-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #00b4a6;
+}
+
+.pillar-card--orange .pillar-card-label {
+  color: #f97316;
+}
+
+@media (max-width: 768px) {
+  .pillars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   REMOVE REVEAL ANIMATIONS — use plain fade in
+   ============================================================ */
+
+.reveal {
+  animation: fadeIn 0.6s ease-out !important;
+}
+
+.reveal.visible,
+.reveal.reveal-d1.visible,
+.reveal.reveal-d2.visible,
+.reveal.reveal-d3.visible,
+.reveal.reveal-d4.visible {
+  animation: fadeIn 0.6s ease-out !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
