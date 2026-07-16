@@ -4749,3 +4749,36 @@ body {
   }
 }
 
+
+/* ============================================================
+   CARD OPACITY PASS — tuned for bolder blob background.
+   Slightly higher opacity so text stays readable against the
+   richer, brighter background shapes.
+   ============================================================ */
+
+.stat-card,
+.pillar-card,
+.page-teaser-card,
+.program-card-c,
+.level-card,
+.pillar-card {
+  background: rgba(6, 6, 26, 0.60) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+}
+
+.contact-split {
+  background: rgba(6, 6, 26, 0.58) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* Keep all card text white / near-white for contrast */
+.stat-card *,
+.pillar-card *,
+.page-teaser-card *,
+.program-card-c *,
+.level-card * {
+  color: inherit;
+}
+
