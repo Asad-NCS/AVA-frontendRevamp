@@ -4503,3 +4503,163 @@ body {
   z-index: 1 !important;
 }
 
+
+/* ============================================================
+   DEFINITIVE BLEND — strip solid section bgs, kill competing
+   dot-grid animation, let the wave canvas be the only bg.
+   ============================================================ */
+
+/* 1. Kill the dot-grid pseudo-element — it fights the wave animation */
+.section::before,
+.section-alt::before,
+.section::after,
+.section-alt::after,
+.partners-strip::before {
+  display: none !important;
+  animation: none !important;
+}
+
+/* 2. Remove overflow:hidden from sections so wave shows fully through */
+.section,
+.section-alt {
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+/* 3. Problem-stats strip: fully transparent, just thin top/bottom lines */
+.problem-stats-strip {
+  background: transparent !important;
+  border-top: 1px solid rgba(255,255,255,0.07) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+}
+
+/* 4. Partners strip: transparent */
+.partners-strip {
+  background: transparent !important;
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+  border-bottom: none !important;
+}
+
+/* 5. Level cards: glass, not solid. Slight border glow on hover */
+.level-card {
+  background: rgba(10, 10, 20, 0.55) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  box-shadow: 0 2px 32px rgba(0,0,0,0.3) !important;
+}
+.level-card:hover {
+  border-color: rgba(0, 180, 166, 0.22) !important;
+  box-shadow: 0 4px 40px rgba(0,180,166,0.08) !important;
+}
+
+/* 6. Program cards: glass with subtle image */
+.program-card-c {
+  background: rgba(8, 8, 18, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+
+/* 7. Page-teaser cards (Blog/About teasers on home) */
+.page-teaser-card,
+.teaser-card {
+  background: rgba(10, 10, 22, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+
+/* 8. About zigzag process steps: remove card box entirely */
+.zigzag-row {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid rgba(0, 180, 166, 0.15) !important;
+  border-radius: 0 !important;
+  padding-left: 48px !important;
+  box-shadow: none !important;
+}
+.zigzag-row:nth-child(even) {
+  border-left: none !important;
+  border-right: 2px solid rgba(249, 115, 22, 0.15) !important;
+  padding-left: 0 !important;
+  padding-right: 48px !important;
+}
+
+/* 9. About stats band / who-we-are section: transparent */
+.about-stats,
+.who-we-are-stage,
+.who-we-are-hero,
+.coaching-section,
+.fourd-section,
+.pillars-section {
+  background: transparent !important;
+}
+
+/* 10. CTA / contact-teaser section at bottom: subtle glass pill */
+.cta-section,
+.cta-band,
+#contact-teaser .section-inner,
+.contact-cta {
+  background: rgba(10, 10, 22, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 24px !important;
+}
+
+/* 11. Pillar cards on home: glass */
+.pillar-card,
+.pillar-item {
+  background: rgba(10, 10, 22, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+
+/* 12. Make all section > direct children sit above canvas */
+.section > *,
+.section-alt > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ============================================================
+   FINAL CARD GLASS — exact class names from HTML
+   ============================================================ */
+
+/* Stats section (7000+, 75+, 50+) */
+.stat-card {
+  background: rgba(10, 10, 22, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 16px !important;
+}
+
+/* Page teaser cards (About / Our Work / Blog) */
+.page-teaser-card {
+  background: rgba(10, 10, 22, 0.5) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+.page-teaser-card:hover {
+  background: rgba(14, 14, 28, 0.65) !important;
+  border-color: rgba(0, 180, 166, 0.25) !important;
+}
+
+/* Contact-teaser split at bottom of home */
+#contact-teaser {
+  background: transparent !important;
+}
+.contact-split {
+  background: rgba(10, 10, 22, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 20px !important;
+  padding: 48px 56px !important;
+}
+
