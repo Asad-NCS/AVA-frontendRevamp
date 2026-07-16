@@ -4,123 +4,180 @@
   const canvas = document.getElementById('bg-canvas');
   if (!canvas) return;
 
-  const ctx = canvas.getContext('2d');
-  let W, H, t = 0;
+  const gl =
+    canvas.getContext('webgl', { antialias: true, alpha: false }) ||
+    canvas.getContext('experimental-webgl', { antialias: true, alpha: false });
 
+  // ---------------------------------------------------------------
+  // Fallback: if WebGL is unavailable, paint a static dark gradient
+  // ---------------------------------------------------------------
+  if (!gl) {
+    const ctx = canvas.getContext('2d');
+    function fallbackResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      g.addColorStop(0, '#0a1330');
+      g.addColorStop(1, '#0d0d1a');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', fallbackResize);
+    fallbackResize();
+    return;
+  }
+
+  // ---------------------------------------------------------------
+  // Shaders
+  // ---------------------------------------------------------------
+  const vertexSrc = `
+    attribute vec2 a_position;
+    void main() {
+      gl_Position = vec4(a_position, 0.0, 1.0);
+    }
+  `;
+
+  // Flowing aurora / gradient-mesh via fractal Brownian motion (fbm)
+  const fragmentSrc = `
+    precision highp float;
+
+    uniform vec2  u_resolution;
+    uniform float u_time;
+
+    // --- hash / noise helpers ---
+    vec2 hash(vec2 p) {
+      p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    }
+
+    float noise(vec2 p) {
+      const float K1 = 0.366025404;
+      const float K2 = 0.211324865;
+      vec2 i = floor(p + (p.x + p.y) * K1);
+      vec2 a = p - i + (i.x + i.y) * K2;
+      float m = step(a.y, a.x);
+      vec2 o = vec2(m, 1.0 - m);
+      vec2 b = a - o + K2;
+      vec2 c = a - 1.0 + 2.0 * K2;
+      vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+      vec3 n = h * h * h * h * vec3(
+        dot(a, hash(i + 0.0)),
+        dot(b, hash(i + o)),
+        dot(c, hash(i + 1.0))
+      );
+      return dot(n, vec3(70.0));
+    }
+
+    float fbm(vec2 p) {
+      float v = 0.0;
+      float a = 0.5;
+      mat2 rot = mat2(1.6, 1.2, -1.2, 1.6);
+      for (int i = 0; i < 5; i++) {
+        v += a * noise(p);
+        p = rot * p;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+      vec2 p = uv;
+      p.x *= u_resolution.x / u_resolution.y;
+
+      float t = u_time * 0.06;
+
+      // Domain-warped fbm for organic flowing motion
+      vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3 - t)));
+      vec2 r = vec2(
+        fbm(p + 1.4 * q + vec2(1.7, 9.2) + 0.15 * t),
+        fbm(p + 1.4 * q + vec2(8.3, 2.8) - 0.12 * t)
+      );
+      float f = fbm(p + 1.8 * r);
+
+      // --- palette (deep navy base, royal blue + electric cyan highlights) ---
+      vec3 cBase   = vec3(0.035, 0.055, 0.13);   // deep navy
+      vec3 cMid    = vec3(0.10,  0.22,  0.60);    // royal blue
+      vec3 cHi     = vec3(0.25,  0.55,  1.0);     // electric blue
+      vec3 cAccent = vec3(0.00,  0.75,  0.78);    // teal accent
+
+      vec3 col = cBase;
+      col = mix(col, cMid,    clamp(f * f * 2.2, 0.0, 1.0));
+      col = mix(col, cHi,     clamp(length(q) * 0.9, 0.0, 1.0));
+      col = mix(col, cAccent, clamp(r.x * 0.45, 0.0, 0.55));
+
+      // subtle vignette so edges stay dark and content pops
+      float vig = smoothstep(1.25, 0.25, length(uv - 0.5));
+      col *= 0.55 + 0.45 * vig;
+
+      // gentle grain to avoid banding
+      float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      col += (grain - 0.5) * 0.02;
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.log('[v0] shader compile error:', gl.getShaderInfoLog(s));
+      gl.deleteShader(s);
+      return null;
+    }
+    return s;
+  }
+
+  const vs = compile(gl.VERTEX_SHADER, vertexSrc);
+  const fs = compile(gl.FRAGMENT_SHADER, fragmentSrc);
+  const program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.log('[v0] program link error:', gl.getProgramInfoLog(program));
+    return;
+  }
+  gl.useProgram(program);
+
+  // Fullscreen triangle
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 3, -1, -1, 3]),
+    gl.STATIC_DRAW
+  );
+  const posLoc = gl.getAttribLocation(program, 'a_position');
+  gl.enableVertexAttribArray(posLoc);
+  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+  const uResolution = gl.getUniformLocation(program, 'u_resolution');
+  const uTime = gl.getUniformLocation(program, 'u_time');
+
+  // Cap DPR at 1.5 for performance on hi-dpi screens
   function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const w = Math.floor(window.innerWidth * dpr);
+    const h = Math.floor(window.innerHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
   window.addEventListener('resize', resize);
   resize();
 
-  function drawTube(pts, radius, phaseOffset) {
-    const wobble = 0.94 + Math.sin(t * 0.38 + phaseOffset) * 0.06;
-    const r = radius * wobble;
-
-    function makePath() {
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length - 2; i++) {
-        const mx = (pts[i].x + pts[i + 1].x) / 2;
-        const my = (pts[i].y + pts[i + 1].y) / 2;
-        ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-      }
-      const l = pts.length;
-      ctx.quadraticCurveTo(pts[l - 2].x, pts[l - 2].y, pts[l - 1].x, pts[l - 1].y);
-    }
-
-    // 1. Soft outer glow — TIGHT, not screen-filling
-    ctx.save();
-    makePath();
-    ctx.lineWidth = r * 1.7;
-    ctx.strokeStyle = 'rgba(90, 150, 255, 0.22)';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.restore();
-
-    // 2. Dark base of the tube (bottom shadow)
-    ctx.save();
-    makePath();
-    ctx.lineWidth = r * 1.05;
-    ctx.strokeStyle = 'rgba(20, 45, 120, 0.95)';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.restore();
-
-    // 3. Core tube — solid bright blue (the defined line)
-    ctx.save();
-    makePath();
-    ctx.lineWidth = r * 0.85;
-    ctx.strokeStyle = 'rgba(70, 130, 255, 1.0)';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.restore();
-
-    // 4. Top highlight — lighter blue, offset up for 3D roundness
-    ctx.save();
-    makePath();
-    ctx.lineWidth = r * 0.42;
-    ctx.strokeStyle = 'rgba(140, 195, 255, 0.95)';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.restore();
-
-    // 5. Specular streak — thin white gloss
-    ctx.save();
-    makePath();
-    ctx.lineWidth = r * 0.14;
-    ctx.strokeStyle = 'rgba(225, 240, 255, 0.9)';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-    ctx.restore();
+  const start = performance.now();
+  function render() {
+    resize();
+    gl.uniform2f(uResolution, canvas.width, canvas.height);
+    gl.uniform1f(uTime, (performance.now() - start) / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(render);
   }
-
-  function getPrimary() {
-    const d  = Math.sin(t * 0.17) * 0.055;
-    const d2 = Math.cos(t * 0.21) * 0.045;
-    return [
-      { x: W * (1.10 + d),                          y: H * -0.06 },
-      { x: W * (0.84 + d * 0.5),                    y: H *  0.14 },
-      { x: W * (0.66 + d2),                          y: H *  0.30 },
-      { x: W * (0.52 + Math.cos(t * 0.19) * 0.04),  y: H *  0.48 },
-      { x: W * (0.36 - d2),                          y: H *  0.66 },
-      { x: W * (0.16 - d * 0.5),                     y: H *  0.84 },
-      { x: W * (-0.10 - d),                          y: H *  1.06 },
-    ];
-  }
-
-  function getSecondary() {
-    const d  = Math.cos(t * 0.13) * 0.05;
-    const d2 = Math.sin(t * 0.18) * 0.04;
-    return [
-      { x: W *  1.10,  y: H * (0.50 + d) },
-      { x: W *  0.82,  y: H * (0.40 + d2) },
-      { x: W *  0.60,  y: H * (0.56 + d * 0.7) },
-      { x: W *  0.38,  y: H * (0.68 + d2) },
-      { x: W *  0.16,  y: H * (0.58 + d) },
-      { x: W * -0.10,  y: H * (0.46 + d * 0.5) },
-    ];
-  }
-
-  function draw() {
-    ctx.fillStyle = '#0d1427';
-    ctx.fillRect(0, 0, W, H);
-
-    // Thin, defined tube — radius much smaller than before
-    const radius = Math.min(W, H) * 0.032;
-
-    drawTube(getSecondary(), radius * 0.6, 2.5);
-    drawTube(getPrimary(), radius, 0.0);
-
-    t += 0.005;
-    requestAnimationFrame(draw);
-  }
-
-  draw();
+  render();
 })();
