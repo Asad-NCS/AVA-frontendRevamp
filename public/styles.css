@@ -4782,3 +4782,113 @@ body {
   color: inherit;
 }
 
+
+/* ============================================================
+   CARD REDESIGN — flat, near-invisible, hairline borders.
+   Matches adventures.studio: dark bg, thin dividers, NO glass blur.
+   Cards ARE the background — just structured dark surfaces.
+   ============================================================ */
+
+/* Reset all the glass/blur overrides from prior passes */
+.stat-card,
+.pillar-card,
+.page-teaser-card,
+.program-card-c,
+.level-card,
+.contact-split,
+.pillar-card--orange {
+  background: rgba(14, 14, 22, 0.82) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+/* Hover: just nudge border brightness, no glow */
+.stat-card:hover,
+.pillar-card:hover,
+.page-teaser-card:hover,
+.level-card:hover {
+  background: rgba(18, 18, 28, 0.90) !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow: none !important;
+}
+
+/* Level cards (home "Challenges" section) — flat dark panels */
+.level-card {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+/* Remove the collage photos from level cards — they clash */
+.level-card-img,
+.client-card .client-photo-grid {
+  display: none !important;
+}
+
+/* Program cards — keep image, darken overlay */
+.program-card-c {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+.program-card-c-overlay {
+  background: linear-gradient(to top, rgba(5,5,15,0.96) 40%, rgba(5,5,15,0.55) 100%) !important;
+}
+
+/* Pillar cards — clean flat panels, left accent line */
+.pillar-card {
+  border-left: 3px solid rgba(0, 180, 166, 0.45) !important;
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+  border-right: 1px solid rgba(255,255,255,0.06) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 0 14px 14px 0 !important;
+  padding: 32px 28px !important;
+}
+.pillar-card--orange {
+  border-left: 3px solid rgba(249, 115, 22, 0.50) !important;
+}
+
+/* Section label text */
+.section-label {
+  font-size: 11px !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.38) !important;
+  font-weight: 500 !important;
+}
+
+/* Who-we-are section: genuinely transparent, just text on the tube bg */
+.who-we-are-hero,
+.who-we-are-stage {
+  background: transparent !important;
+}
+
+/* Page-teaser cards on home — flat dark */
+.page-teaser-card {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+/* Contact split section */
+.contact-split {
+  background: rgba(10, 10, 20, 0.78) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 20px !important;
+  padding: 48px 52px !important;
+}
+
+/* Stat cards — simple dark tiles */
+.stat-card {
+  border-radius: 12px !important;
+  text-align: left !important;
+  padding: 28px 28px !important;
+}
+
+/* ============================================================
+   BODY BG — match animation's near-black #0a0a14
+   ============================================================ */
+html, body {
+  background-color: #0a0a14 !important;
+}
+
