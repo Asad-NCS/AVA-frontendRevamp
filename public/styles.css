@@ -4402,3 +4402,104 @@ body {
 .hero--contact .hero-bg-image {
   filter: saturate(0.25) brightness(0.45) !important;
 }
+
+/* ============================================================
+   BLEND OVERRIDES — remove solid boxes, let animation breathe
+   ============================================================ */
+
+/* --- Hero sections: transparent, animation shows fully through --- */
+.hero--nebula,
+.hero--contact {
+  background: transparent !important;
+}
+
+.hero--nebula .hero-video-wrap,
+.hero--contact .hero-video-wrap {
+  display: none !important;
+}
+
+/* Give contact hero enough height without image */
+.hero--contact {
+  min-height: 480px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* --- Zigzag rows: remove solid bg box, add subtle left accent line --- */
+.zigzag-row {
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid rgba(0, 180, 166, 0.18) !important;
+  border-radius: 0 !important;
+  padding-left: 40px !important;
+}
+
+.zigzag-row:nth-child(even) {
+  border-left: none !important;
+  border-right: 2px solid rgba(249, 115, 22, 0.18) !important;
+  padding-left: 0 !important;
+  padding-right: 40px !important;
+}
+
+/* Zigzag images: rounded, slightly dimmed to blend */
+.zigzag-image {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 24px 48px rgba(0,0,0,0.5) !important;
+}
+
+.zigzag-image img {
+  filter: brightness(0.75) saturate(0.85) !important;
+}
+
+/* --- Program cards: translucent instead of solid dark --- */
+.program-card-c {
+  background: rgba(19, 19, 30, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* --- Level cards (home "Challenges" section): translucent, no harsh box --- */
+.level-card {
+  background: rgba(15, 15, 23, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Premium cards (Our Work / cards with image bg): keep dark overlay --- */
+.premium-card {
+  background: rgba(13, 13, 20, 0.7) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* --- Stats / metrics blocks on homepage: transparent not solid dark --- */
+.metrics-grid,
+.stat-block,
+.stats-band {
+  background: transparent !important;
+}
+
+.stat-block {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Process cards (5-col grid on about): hide photo, keep text only --- */
+.process-card {
+  background: rgba(19, 19, 30, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.process-card img {
+  display: none !important;
+}
+
+/* --- Sections that were solid dark: make semi-transparent --- */
+.who-we-are-hero .who-we-are-stage-inner,
+.section:not(.hero) {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
