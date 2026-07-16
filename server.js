@@ -45,13 +45,13 @@ app.get('/meister/blog', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meister', 'blog.html'));
 });
 app.get('/meister/about', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'about.html'));
+  res.sendFile(path.join(__dirname, 'public', 'about.html'));
 });
 app.get('/meister/our-work', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'our-work.html'));
+  res.sendFile(path.join(__dirname, 'public', 'our-work.html'));
 });
 app.get('/meister/contact', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'meister', 'contact.html'));
+  res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
 // ── STATIC FILES ──────────────────────────────────────────────────────────────

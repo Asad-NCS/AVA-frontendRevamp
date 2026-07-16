@@ -342,3 +342,61 @@ if (pillarsCarousel && pillarPrevBtn && pillarNextBtn) {
     }
   });
 })();
+
+// ─── MEISTER NAV INJECTION ───
+// On any page under /meister/*, once we confirm the visitor is logged in,
+// remove any existing "Work With Us" CTA and insert a Meister badge +
+// Log Out button into the nav instead. Works whether or not the page has
+// a .nav-cta to begin with (the homepage nav has none), so About/Contact/
+// Our Work/Home never need a separate meister/ copy — they're the same
+// file, just with the nav adjusted client-side.
+(function () {
+  if (!window.location.pathname.startsWith('/meister')) return;
+
+  const navbarEl = document.getElementById('navbar');
+  if (!navbarEl) return;
+
+  fetch('/api/meister/status', { credentials: 'same-origin' })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.authenticated) return;
+
+      // Remove the normal "Work With Us" CTA if this page has one.
+      const existingCta = navbarEl.querySelector('.nav-cta');
+      if (existingCta) existingCta.remove();
+
+      const wrap = document.createElement('div');
+      wrap.className = 'nav-meister-actions';
+
+      const badge = document.createElement('span');
+      badge.className = 'meister-badge';
+      badge.textContent = 'Meister';
+
+      const logoutBtn = document.createElement('button');
+      logoutBtn.type = 'button';
+      logoutBtn.className = 'nav-cta meister-logout-btn';
+      logoutBtn.textContent = 'Log Out';
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await fetch('/api/meister/logout', { method: 'POST', credentials: 'same-origin' });
+        } catch {
+          // ignore, we're redirecting either way
+        }
+        window.location.href = '/meister';
+      });
+
+      wrap.appendChild(badge);
+      wrap.appendChild(logoutBtn);
+
+      // Insert before the hamburger button if present, otherwise just append.
+      const hamburgerEl = navbarEl.querySelector('.hamburger');
+      if (hamburgerEl) {
+        navbarEl.insertBefore(wrap, hamburgerEl);
+      } else {
+        navbarEl.appendChild(wrap);
+      }
+    })
+    .catch(() => {
+      // If the status check fails, just leave the normal nav in place.
+    });
+})();
