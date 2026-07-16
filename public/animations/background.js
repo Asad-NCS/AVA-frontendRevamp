@@ -16,18 +16,18 @@
 
   /* ----------------------------------------------------------------
      TUBE RENDERER
-     Draws a thick bezier path as a 3D-looking tube/pipe by layering:
-       1. Outer glow  (wide, dark, alpha ~0.18)
-       2. Shadow band (dark navy, simulates underside)
-       3. Core sweep  (bright blue, simulates top highlight)
-       4. Specular    (near-white thin line, simulates gloss reflection)
+     Draws a thick bezier path as a 3D-looking glowing tube by layering
+     5 strokes from wide→narrow:
+       1. Outer glow  — wide, dark blue, very transparent
+       2. Shadow band — dark navy, simulates cylinder underside
+       3. Core        — bright royal blue, the dominant color
+       4. Mid tone    — lighter electric blue
+       5. Specular    — thin near-white streak, simulates gloss
   ---------------------------------------------------------------- */
-  function drawTube(pts, radius, time, phaseOffset) {
-    const R = radius;
-    const wobble = 0.92 + Math.sin(time * 0.4 + phaseOffset) * 0.08;
-    const r = R * wobble;
+  function drawTube(pts, radius, phaseOffset) {
+    const wobble = 0.94 + Math.sin(t * 0.38 + phaseOffset) * 0.06;
+    const r = radius * wobble;
 
-    // Build the bezier path through the control points
     function makePath() {
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
@@ -40,51 +40,51 @@
       ctx.quadraticCurveTo(pts[l - 2].x, pts[l - 2].y, pts[l - 1].x, pts[l - 1].y);
     }
 
-    // 1. Outer glow — soft halo
+    // 1. Outer glow
     ctx.save();
     makePath();
-    ctx.lineWidth = r * 3.2;
-    ctx.strokeStyle = 'rgba(30, 50, 220, 0.12)';
+    ctx.lineWidth = r * 3.4;
+    ctx.strokeStyle = 'rgba(30, 55, 230, 0.11)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 2. Dark shadow band (bottom half of tube)
+    // 2. Dark shadow band
     ctx.save();
     makePath();
-    ctx.lineWidth = r * 1.85;
-    ctx.strokeStyle = 'rgba(5, 8, 60, 0.88)';
+    ctx.lineWidth = r * 1.9;
+    ctx.strokeStyle = 'rgba(4, 6, 55, 0.92)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 3. Core tube — vibrant blue
+    // 3. Core — vibrant royal blue
     ctx.save();
     makePath();
     ctx.lineWidth = r * 1.55;
-    ctx.strokeStyle = 'rgba(40, 80, 240, 0.95)';
+    ctx.strokeStyle = 'rgba(35, 75, 245, 0.97)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 4. Mid-tone layer — electric blue
+    // 4. Mid highlight — lighter electric blue
     ctx.save();
     makePath();
-    ctx.lineWidth = r * 1.0;
-    ctx.strokeStyle = 'rgba(80, 130, 255, 0.70)';
+    ctx.lineWidth = r * 0.95;
+    ctx.strokeStyle = 'rgba(80, 130, 255, 0.72)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 5. Specular highlight — narrow bright streak on top
+    // 5. Specular streak
     ctx.save();
     makePath();
-    ctx.lineWidth = r * 0.28;
-    ctx.strokeStyle = 'rgba(180, 210, 255, 0.55)';
+    ctx.lineWidth = r * 0.26;
+    ctx.strokeStyle = 'rgba(190, 215, 255, 0.50)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -92,48 +92,52 @@
   }
 
   /* ----------------------------------------------------------------
-     TWO TUBES — one primary S-curve, one secondary smaller arc.
-     Control points are animated slowly so the snake drifts.
+     CONTROL POINTS — animated slowly so the tubes drift organically.
+     Primary:   dominant S-curve, top-right → bottom-left.
+     Secondary: smaller arc, right-mid → left-mid, opposite phase.
   ---------------------------------------------------------------- */
-  function getPrimary(time) {
-    // S-curve: enters top-right, sweeps down through centre, exits bottom-left
-    const drift = Math.sin(time * 0.18) * 0.06;
+  function getPrimary() {
+    const d  = Math.sin(t * 0.17) * 0.055;
+    const d2 = Math.cos(t * 0.21) * 0.045;
     return [
-      { x: W * (1.05 + drift),          y: H * (-0.05) },
-      { x: W * (0.80 + drift * 0.5),    y: H * 0.18 },
-      { x: W * (0.62 + Math.sin(time * 0.22) * 0.04), y: H * 0.34 },
-      { x: W * (0.50 + Math.cos(time * 0.19) * 0.05), y: H * 0.50 },
-      { x: W * (0.36 + Math.sin(time * 0.21) * 0.04), y: H * 0.66 },
-      { x: W * (0.18 - drift * 0.5),    y: H * 0.82 },
-      { x: W * (-0.08 - drift),          y: H * 1.04 },
+      { x: W * (1.06 + d),                          y: H * -0.04 },
+      { x: W * (0.82 + d * 0.5),                    y: H *  0.16 },
+      { x: W * (0.64 + d2),                          y: H *  0.32 },
+      { x: W * (0.50 + Math.cos(t * 0.19) * 0.04),  y: H *  0.50 },
+      { x: W * (0.36 - d2),                          y: H *  0.68 },
+      { x: W * (0.18 - d * 0.5),                     y: H *  0.84 },
+      { x: W * (-0.06 - d),                          y: H *  1.04 },
     ];
   }
 
-  function getSecondary(time) {
-    // A second tube — top-left to right, offset in time phase
-    const drift = Math.cos(time * 0.14) * 0.05;
+  function getSecondary() {
+    const d  = Math.cos(t * 0.13) * 0.05;
+    const d2 = Math.sin(t * 0.18) * 0.04;
     return [
-      { x: W * (1.08),                   y: H * (0.55 + drift) },
-      { x: W * (0.82),                   y: H * (0.44 + Math.sin(time * 0.17) * 0.04) },
-      { x: W * (0.60),                   y: H * (0.60 + drift * 0.6) },
-      { x: W * (0.38),                   y: H * (0.72 + Math.cos(time * 0.20) * 0.04) },
-      { x: W * (0.15),                   y: H * (0.62 + drift) },
-      { x: W * (-0.06),                  y: H * (0.50 + drift * 0.5) },
+      { x: W *  1.08,  y: H * (0.52 + d) },
+      { x: W *  0.80,  y: H * (0.42 + d2) },
+      { x: W *  0.60,  y: H * (0.58 + d * 0.7) },
+      { x: W *  0.40,  y: H * (0.70 + d2) },
+      { x: W *  0.18,  y: H * (0.60 + d) },
+      { x: W * -0.06,  y: H * (0.48 + d * 0.5) },
     ];
   }
 
+  /* ----------------------------------------------------------------
+     RENDER LOOP
+     No getImageData, no per-pixel ops — stays at 60fps.
+  ---------------------------------------------------------------- */
   function draw() {
-    // Near-black background — matches reference site's #0d0d0d
     ctx.fillStyle = '#0a0a14';
     ctx.fillRect(0, 0, W, H);
 
-    const radius = Math.min(W, H) * 0.072;
+    const radius = Math.min(W, H) * 0.074;
 
-    // Secondary tube behind primary (thinner)
-    drawTube(getSecondary(t), radius * 0.62, t, 2.4);
+    // Secondary behind primary (thinner)
+    drawTube(getSecondary(), radius * 0.62, 2.5);
 
-    // Primary dominant S-curve
-    drawTube(getPrimary(t), radius, t, 0.0);
+    // Primary S-curve — the dominant design element
+    drawTube(getPrimary(), radius, 0.0);
 
     t += 0.005;
     requestAnimationFrame(draw);
