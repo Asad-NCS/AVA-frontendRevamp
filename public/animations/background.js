@@ -14,16 +14,6 @@
   window.addEventListener('resize', resize);
   resize();
 
-  /* ----------------------------------------------------------------
-     TUBE RENDERER
-     Draws a thick bezier path as a 3D-looking glowing tube by layering
-     5 strokes from wide→narrow:
-       1. Outer glow  — wide, dark blue, very transparent
-       2. Shadow band — dark navy, simulates cylinder underside
-       3. Core        — bright royal blue, the dominant color
-       4. Mid tone    — lighter electric blue
-       5. Specular    — thin near-white streak, simulates gloss
-  ---------------------------------------------------------------- */
   function drawTube(pts, radius, phaseOffset) {
     const wobble = 0.94 + Math.sin(t * 0.38 + phaseOffset) * 0.06;
     const r = radius * wobble;
@@ -40,62 +30,57 @@
       ctx.quadraticCurveTo(pts[l - 2].x, pts[l - 2].y, pts[l - 1].x, pts[l - 1].y);
     }
 
-    // 1. Outer glow
+    // 1. Outer glow — BRIGHT halo
     ctx.save();
     makePath();
     ctx.lineWidth = r * 3.4;
-    ctx.strokeStyle = 'rgba(30, 55, 230, 0.11)';
+    ctx.strokeStyle = 'rgba(100, 160, 255, 0.35)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 2. Dark shadow band
+    // 2. Dark shadow band — provides depth
     ctx.save();
     makePath();
     ctx.lineWidth = r * 1.9;
-    ctx.strokeStyle = 'rgba(4, 6, 55, 0.92)';
+    ctx.strokeStyle = 'rgba(30, 60, 140, 0.70)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 3. Core — vibrant royal blue
+    // 3. Core — BRIGHT vibrant blue (main visible color)
     ctx.save();
     makePath();
     ctx.lineWidth = r * 1.55;
-    ctx.strokeStyle = 'rgba(35, 75, 245, 0.97)';
+    ctx.strokeStyle = 'rgba(120, 180, 255, 1.0)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 4. Mid highlight — lighter electric blue
+    // 4. Mid highlight — BRIGHT electric blue
     ctx.save();
     makePath();
     ctx.lineWidth = r * 0.95;
-    ctx.strokeStyle = 'rgba(80, 130, 255, 0.72)';
+    ctx.strokeStyle = 'rgba(150, 210, 255, 0.95)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
 
-    // 5. Specular streak
+    // 5. Specular streak — bright highlight
     ctx.save();
     makePath();
     ctx.lineWidth = r * 0.26;
-    ctx.strokeStyle = 'rgba(190, 215, 255, 0.50)';
+    ctx.strokeStyle = 'rgba(220, 240, 255, 0.90)';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
     ctx.restore();
   }
 
-  /* ----------------------------------------------------------------
-     CONTROL POINTS — animated slowly so the tubes drift organically.
-     Primary:   dominant S-curve, top-right → bottom-left.
-     Secondary: smaller arc, right-mid → left-mid, opposite phase.
-  ---------------------------------------------------------------- */
   function getPrimary() {
     const d  = Math.sin(t * 0.17) * 0.055;
     const d2 = Math.cos(t * 0.21) * 0.045;
@@ -123,20 +108,13 @@
     ];
   }
 
-  /* ----------------------------------------------------------------
-     RENDER LOOP
-     No getImageData, no per-pixel ops — stays at 60fps.
-  ---------------------------------------------------------------- */
   function draw() {
-    ctx.fillStyle = '#0a0a14';
+    ctx.fillStyle = '#0d1427';
     ctx.fillRect(0, 0, W, H);
 
     const radius = Math.min(W, H) * 0.074;
 
-    // Secondary behind primary (thinner)
     drawTube(getSecondary(), radius * 0.62, 2.5);
-
-    // Primary S-curve — the dominant design element
     drawTube(getPrimary(), radius, 0.0);
 
     t += 0.005;
