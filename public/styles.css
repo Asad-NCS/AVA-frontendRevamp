@@ -4904,3 +4904,70 @@ body {
   filter: brightness(1.15) saturate(1.1);
 }
 
+
+/* ============================================================
+   GLASS BLEND PASS (final override)
+   Cards become frosted glass so the WebGL aurora shader glows
+   through them — content blends WITH the animation instead of
+   sitting on opaque panels on top of it.
+   ============================================================ */
+
+.stat-card,
+.pillar-card,
+.page-teaser-card,
+.program-card-c,
+.level-card,
+.contact-split,
+.pillar-card--orange {
+  background: rgba(13, 20, 39, 0.42) !important;
+  backdrop-filter: blur(22px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.3) !important;
+  border: 1px solid rgba(140, 180, 255, 0.14) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Hover: brighten the glass edge, subtle lift */
+.stat-card:hover,
+.pillar-card:hover,
+.page-teaser-card:hover,
+.level-card:hover,
+.program-card-c:hover {
+  background: rgba(20, 30, 56, 0.52) !important;
+  border-color: rgba(150, 195, 255, 0.30) !important;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Pillar cards keep the colored accent edge, glassy elsewhere */
+.pillar-card {
+  border-left: 3px solid rgba(0, 200, 184, 0.65) !important;
+  border-radius: 0 16px 16px 0 !important;
+}
+.pillar-card--orange {
+  border-left: 3px solid rgba(249, 130, 40, 0.70) !important;
+}
+
+/* Program cards: image stays, lighten the overlay so shader-lit
+   glass edge reads, but text still has contrast */
+.program-card-c-overlay {
+  background: linear-gradient(to top,
+    rgba(8, 12, 28, 0.94) 30%,
+    rgba(8, 12, 28, 0.45) 100%) !important;
+}
+
+/* Contact split: bigger frosted panel */
+.contact-split {
+  background: rgba(13, 20, 39, 0.40) !important;
+  border: 1px solid rgba(140, 180, 255, 0.16) !important;
+  border-radius: 22px !important;
+}
+
+/* Keep the canvas full-strength — no dimming filter now */
+#bg-canvas {
+  filter: none !important;
+}
+
