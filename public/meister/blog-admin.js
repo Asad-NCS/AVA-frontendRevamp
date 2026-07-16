@@ -142,12 +142,17 @@ form?.addEventListener('submit', async (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Posting…';
 
-  const formData = new FormData();
-  formData.append('text', postText.value.trim());
-  selectedFiles.forEach((file) => formData.append('media', file));
-
   try {
-    const res = await fetch('/api/blog', { method: 'POST', body: formData, credentials: 'same-origin' });
+    const formData = new FormData();
+    formData.append('text', postText.value.trim());
+    selectedFiles.forEach((file) => formData.append('media', file));
+
+    const res = await fetch('/api/blog', { 
+      method: 'POST', 
+      body: formData, 
+      credentials: 'same-origin' 
+    });
+    
     const data = await res.json();
 
     if (!res.ok) {
