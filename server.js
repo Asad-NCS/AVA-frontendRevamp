@@ -112,3 +112,31 @@ app.post('/api/contact', async (req, res) => {
 app.listen(port, () => {
   console.log(`AVA server running on port ${port}`);
 });
+
+// Explicit routes for meister pages
+app.get('/meister', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister.html'));
+});
+
+app.get('/meister/index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'index.html'));
+});
+
+app.get('/meister/blog', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'blog.html'));
+});
+
+app.get('/meister/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'about.html'));
+});
+
+app.get('/meister/our-work', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'our-work.html'));
+});
+
+app.get('/meister/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'meister', 'contact.html'));
+
+app.listen(port, () => {
+  console.log(`AVA server running on port ${port}`);
+});
