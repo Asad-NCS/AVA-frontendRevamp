@@ -343,15 +343,31 @@ if (pillarsCarousel && pillarPrevBtn && pillarNextBtn) {
   });
 })();
 
-// ─── MEISTER NAV INJECTION ───
-// On any page under /meister/*, once we confirm the visitor is logged in,
-// remove any existing "Work With Us" CTA and insert a Meister badge +
-// Log Out button into the nav instead. Works whether or not the page has
-// a .nav-cta to begin with (the homepage nav has none), so About/Contact/
-// Our Work/Home never need a separate meister/ copy — they're the same
-// file, just with the nav adjusted client-side.
+// ─── MEISTER LINK REWRITING + NAV INJECTION ───
+// The shared HTML files (about.html, contact.html, our-work.html, blog.html)
+// use relative links like href="index.html". Those resolve against the
+// current URL path, so on /meister/about, href="index.html" would wrongly
+// point to /meister/index.html (404). Rewrite known internal links to their
+// /meister/* equivalents whenever we're under /meister, so navigation stays
+// inside the meister subtree. Runs regardless of login state, since viewing
+// meister pages isn't gated, only posting/deleting is.
 (function () {
   if (!window.location.pathname.startsWith('/meister')) return;
+
+  const meisterLinkMap = {
+    'index.html': '/meister',
+    'about.html': '/meister/about',
+    'our-work.html': '/meister/our-work',
+    'contact.html': '/meister/contact',
+    'blog.html': '/meister/blog',
+  };
+
+  document.querySelectorAll('a[href]').forEach((a) => {
+    const raw = a.getAttribute('href');
+    if (raw && Object.prototype.hasOwnProperty.call(meisterLinkMap, raw)) {
+      a.setAttribute('href', meisterLinkMap[raw]);
+    }
+  });
 
   const navbarEl = document.getElementById('navbar');
   if (!navbarEl) return;
