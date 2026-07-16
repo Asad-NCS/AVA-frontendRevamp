@@ -111,7 +111,7 @@
       );
       float f = fbm(p + 1.8 * r);
 
-      vec3 cBase   = vec3(0.035, 0.055, 0.13);
+      vec3 cBase   = vec3(0.06,  0.10,  0.22);
       vec3 cMid    = vec3(0.10,  0.22,  0.60);
       vec3 cHi     = vec3(0.25,  0.55,  1.0);
       vec3 cAccent = vec3(0.00,  0.75,  0.78);
@@ -121,8 +121,10 @@
       col = mix(col, cHi,     clamp(length(q) * 0.9, 0.0, 1.0));
       col = mix(col, cAccent, clamp(r.x * 0.45, 0.0, 0.55));
 
-      float vig = smoothstep(1.25, 0.25, length(uv - 0.5));
-      col *= 0.55 + 0.45 * vig;
+      // Gentler vignette with a higher floor so the center/bottom
+      // stays luminous instead of going muddy.
+      float vig = smoothstep(1.35, 0.35, length(uv - 0.5));
+      col *= 0.78 + 0.22 * vig;
 
       float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
       col += (grain - 0.5) * 0.02;

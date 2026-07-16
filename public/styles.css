@@ -4951,12 +4951,19 @@ body {
   border-left: 3px solid rgba(249, 130, 40, 0.70) !important;
 }
 
-/* Program cards: image stays, lighten the overlay so shader-lit
-   glass edge reads, but text still has contrast */
+/* Program cards: keep photos bright & vibrant — only a soft bottom
+   fade blends the image into the card body below it. */
 .program-card-c-overlay {
   background: linear-gradient(to top,
-    rgba(8, 12, 28, 0.94) 30%,
-    rgba(8, 12, 28, 0.45) 100%) !important;
+    rgba(13, 20, 39, 0.80) 0%,
+    rgba(13, 20, 39, 0.20) 32%,
+    transparent 60%) !important;
+}
+
+/* Normalize/brighten the photos so darker candid shots (Program 01-03)
+   match the vibrancy of the brighter ones. */
+.program-card-c-img img {
+  filter: brightness(1.10) contrast(1.04) saturate(1.06) !important;
 }
 
 /* Contact split: bigger frosted panel */
