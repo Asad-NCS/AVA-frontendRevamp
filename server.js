@@ -11,7 +11,15 @@ app.use(express.json());
 app.use(cookieParser());
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'meister-ava-2026';
+// No hardcoded fallback here on purpose — this repo is public on GitHub, so a
+// default password baked into the code would be visible to anyone. If
+// ADMIN_PASSWORD isn't set in the environment, login is disabled below
+// rather than silently falling back to something guessable.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_PASSWORD) {
+  console.warn('WARNING: ADMIN_PASSWORD is not set. /meister login is disabled until it is configured in your environment variables.');
+}
 
 // ── FILE UPLOAD SETUP ─────────────────────────────────────────────────────────
 const uploadDir = path.join(__dirname, 'public', 'uploads');
@@ -112,6 +120,13 @@ app.post('/api/meister/login', (req, res) => {
   }
 
   const { password } = req.body;
+
+  if (!ADMIN_PASSWORD) {
+    return res.status(503).json({
+      success: false,
+      error: 'Login is not configured. Set ADMIN_PASSWORD in your environment variables.',
+    });
+  }
 
   if (password === ADMIN_PASSWORD) {
     loginAttempts.delete(ip);
