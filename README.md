@@ -14,8 +14,9 @@ development and corporate training company.
 | **Frontend**   | Vanilla HTML / CSS / JavaScript (no framework, no build step) |
 | **Background** | Custom **WebGL** fragment shader (animated aurora, raw GLSL)  |
 | **Server**     | Node.js + **Express**                                         |
-| **Database**   | **PostgreSQL** via `pg` (blog posts + contact submissions)    |
-| **Auth**       | Cookie-based admin login (`cookie-parser`)                    |
+| **Database**   | **PostgreSQL** via `pg` (blog posts + contact submissions), hosted on **Neon** |
+| **File Uploads** | `multer` (blog media, stored under `public/uploads`)       |
+| **Auth**       | Cookie-based admin login (`cookie-parser`), rate-limited      |
 | **Hosting**    | Vercel                                                        |
 
 There is **no build step** — the site is static files served by Express,
@@ -54,7 +55,9 @@ PORT=3000
 ```
 
 > On Vercel, set these in **Project Settings → Environment Variables**
-> instead of a local `.env` file.
+> instead of a local `.env` file. Changing them requires a redeploy
+> (`vercel --prod`) to take effect — env var changes don't apply
+> retroactively to an already-running deployment.
 
 ---
 
@@ -87,35 +90,59 @@ ava-revamp/
 ├── public/
 │   ├── animations/
 │   │   └── background.js     ← WebGL aurora shader
-│   ├── images/               ← Site image assets
-│   ├── media/                ← Card & section graphics
-│   ├── uploads/              ← Blog image uploads
-│   ├── meister/              ← Separate white-label "Meister" branded site
-│   │   ├── index.html  about.html  blog.html  contact.html  our-work.html
+│   ├── images/                ← Site image assets
+│   ├── media/                 ← Card & section graphics
+│   ├── uploads/                ← Blog media uploads (images/videos/PDFs)
+│   ├── meister/                ← Meister-only pages (not full site duplicates)
+│   │   ├── blog.html           ← Admin dashboard (compose/delete posts)
 │   │   ├── blog-admin.js
 │   │   └── meister-ui.js
-│   ├── index.html            ← Home
+│   ├── index.html              ← Home
 │   ├── about.html
 │   ├── our-work.html
 │   ├── blog.html
 │   ├── contact.html
-│   ├── meister.html          ← Meister landing entry
-│   ├── script.js             ← Shared site JS (nav, interactions)
-│   ├── blog.js               ← Blog rendering
-│   ├── meister.js            ← Meister site JS
-│   └── styles.css            ← All styles
-├── data/                     ← Legacy seed JSON (live data is in Postgres)
-├── scripts/                  ← Maintenance / sync helpers
-├── server.js                 ← Express server + blog/contact APIs
+│   ├── meister.html            ← Meister login gate
+│   ├── script.js                ← Shared site JS (nav, interactions, meister nav injection)
+│   ├── blog.js                  ← Blog rendering (shared by public + meister blog pages)
+│   ├── meister.js               ← Meister login form logic
+│   └── styles.css               ← All styles
+├── data/                       ← Legacy seed JSON (live data is in Postgres)
+├── scripts/                    ← Maintenance / sync helpers
+├── absolutize-assets.js        ← See Maintenance Scripts below
+├── bump-cache.js                ← See Maintenance Scripts below
+├── server.js                    ← Express server + blog/contact APIs
 ├── package.json
-├── .env.example              ← Copy to .env
+├── .env.example                 ← Copy to .env
 ├── .gitignore
 └── README.md
 ```
 
-> **Note on `meister/`:** these pages are an intentional, separately branded
-> version of the site — not duplicates. Shared style/behavior changes may need
-> to be applied to both the main pages and their `meister/` counterparts.
+> **Note on `meister/`:** only `blog.html` (the compose/delete dashboard) is
+> a genuinely separate meister-only page. Home, About, Our Work, and Contact
+> are **not** duplicated — `/meister/home`, `/meister/about`,
+> `/meister/our-work`, and `/meister/contact` all serve the same root-level
+> HTML files, with the nav swapped client-side (Meister badge + Log Out
+> instead of "Work With Us") by `script.js`. Editing `about.html`,
+> `contact.html`, `our-work.html`, or `index.html` updates both the public
+> page and its `/meister/*` counterpart automatically.
+>
+> `/meister` itself (`meister.html`) is the **login gate only**, not a
+> content page — once logged in it redirects to `/meister/blog` (the
+> dashboard). `/meister/home` is the actual meister-branded homepage.
+
+---
+
+## Maintenance Scripts
+
+Because there's no build step, two small scripts handle cache-busting and
+path correctness by hand. Run them (from the repo root) before committing
+if you've touched the files they cover:
+
+| Command                          | When to run it                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `node bump-cache.js <version>`    | After editing `script.js` or `blog.js` — bumps their `?v=` query string across all HTML files so Vercel's edge cache and browsers fetch the new version instead of a stale copy. |
+| `node absolutize-assets.js`       | After editing a shared page's asset references (`styles.css`, `script.js`, `blog.js`, `animations/background.js`, `media/*`) — rewrites them to absolute paths (`/styles.css`) so they resolve correctly under both `/` and `/meister/*` routes. |
 
 ---
 
@@ -134,7 +161,7 @@ Deployed on **Vercel**. Pushing to the `main` branch of the connected GitHub
 repo triggers a deploy; you can also deploy manually with the Vercel CLI:
 
 ```bash
-vercel deploy --prod
+vercel --prod
 ```
 
 Remember to configure `DATABASE_URL` and `ADMIN_PASSWORD` in the Vercel
