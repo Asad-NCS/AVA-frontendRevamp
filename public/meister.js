@@ -3,7 +3,7 @@ const passwordInput = document.getElementById('meisterPassword');
 const statusEl = document.getElementById('meisterStatus');
 const submitBtn = document.getElementById('meisterSubmit');
 
-const MEISTER_HOME = '/meister/index.html';
+const MEISTER_HOME = '/meister/blog';
 
 function redirectHome() {
   window.location.href = '/index.html';
