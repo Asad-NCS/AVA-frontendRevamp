@@ -49,6 +49,9 @@ const upload = multer({
 app.get('/meister', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meister.html'));
 });
+app.get('/meister/home', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 app.get('/meister/blog', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'meister', 'blog.html'));
 });

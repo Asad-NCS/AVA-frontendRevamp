@@ -355,7 +355,7 @@ if (pillarsCarousel && pillarPrevBtn && pillarNextBtn) {
   if (!window.location.pathname.startsWith('/meister')) return;
 
   const meisterLinkMap = {
-    'index.html': '/meister',
+    'index.html': '/meister/home',
     'about.html': '/meister/about',
     'our-work.html': '/meister/our-work',
     'contact.html': '/meister/contact',
