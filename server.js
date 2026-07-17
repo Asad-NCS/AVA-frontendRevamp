@@ -57,24 +57,103 @@ app.get('/meister/contact', (req, res) => {
 // ── STATIC FILES ──────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── MEISTER LOGIN RATE LIMITING ───────────────────────────────────────────────
+// Simple in-memory attempt tracker, keyed by IP. This resets whenever the
+// serverless function cold-starts (goes idle and spins back up), so it's a
+// speed bump against casual brute-forcing, not a hard guarantee — good
+// enough for a low-stakes internal admin panel. For anything higher-stakes,
+// swap this Map for a shared store like Upstash/Redis so limits survive
+// across cold starts and multiple function instances.
+const loginAttempts = new Map(); // ip -> { count, firstAttempt, lockedUntil }
+
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // failed attempts older than this don't count
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // how long a lockout lasts
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.socket.remoteAddress || 'unknown';
+}
+
+function getLoginStatus(ip) {
+  const record = loginAttempts.get(ip);
+  const now = Date.now();
+
+  if (!record) {
+    return { blocked: false, attemptsLeft: MAX_LOGIN_ATTEMPTS };
+  }
+
+  if (record.lockedUntil && now < record.lockedUntil) {
+    return { blocked: true, attemptsLeft: 0, lockedUntil: record.lockedUntil };
+  }
+
+  if (now - record.firstAttempt > LOGIN_WINDOW_MS) {
+    // Window expired, attempts no longer count
+    return { blocked: false, attemptsLeft: MAX_LOGIN_ATTEMPTS };
+  }
+
+  return { blocked: false, attemptsLeft: Math.max(0, MAX_LOGIN_ATTEMPTS - record.count) };
+}
+
 // ── MEISTER AUTH API ──────────────────────────────────────────────────────────
 app.post('/api/meister/login', (req, res) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  const status = getLoginStatus(ip);
+
+  if (status.blocked) {
+    const minutesLeft = Math.ceil((status.lockedUntil - now) / 60000);
+    return res.status(429).json({
+      success: false,
+      blocked: true,
+      error: `Too many attempts. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`,
+    });
+  }
+
   const { password } = req.body;
+
   if (password === ADMIN_PASSWORD) {
+    loginAttempts.delete(ip);
     res.cookie('meister_auth', 'authenticated', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ success: false, error: 'Invalid password' });
+    return res.json({ success: true });
   }
+
+  // Wrong password — record the attempt
+  let record = loginAttempts.get(ip);
+  if (!record || now - record.firstAttempt > LOGIN_WINDOW_MS) {
+    record = { count: 0, firstAttempt: now, lockedUntil: null };
+  }
+  record.count += 1;
+
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = now + LOGIN_LOCKOUT_MS;
+    loginAttempts.set(ip, record);
+    return res.status(429).json({
+      success: false,
+      blocked: true,
+      error: `Too many attempts. Try again in ${Math.ceil(LOGIN_LOCKOUT_MS / 60000)} minutes.`,
+    });
+  }
+
+  loginAttempts.set(ip, record);
+  const attemptsLeft = MAX_LOGIN_ATTEMPTS - record.count;
+  res.status(401).json({ success: false, error: 'Invalid password', attemptsLeft });
 });
 
 app.get('/api/meister/status', (req, res) => {
-  res.json({ authenticated: req.cookies.meister_auth === 'authenticated' });
+  const ip = getClientIp(req);
+  const status = getLoginStatus(ip);
+  res.json({
+    authenticated: req.cookies.meister_auth === 'authenticated',
+    blocked: status.blocked,
+    attemptsLeft: status.attemptsLeft,
+  });
 });
 
 app.post('/api/meister/logout', (req, res) => {
